@@ -105,14 +105,14 @@ const Dashboard = () => {
           <FaFlag size={30} color="green" />
           <h3>Report Incident</h3>
           <p>Report cases</p>
-          <button className="card-btn">Report</button>
+          <button className="card-btn" onClick={() => navigate("/report")}>Report</button>
         </div>
 
         <div ref={testimonialsRef} className="card" style={{ backgroundColor: "pink" }}>
           <FaQuoteLeft size={30} color="#007bff" />
           <h3>Testimonials</h3>
           <p>See other survivors' stories</p>
-          <button className="card-btn">See Testimonies</button>
+          <button className="card-btn" onClick={() => navigate("/testimonials")}>See Testimonies</button>
         </div>
       </div>
     </div>

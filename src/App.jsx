@@ -8,6 +8,8 @@ import Dashboard from './Dashboard';
 import ResourceLocator from './ResourceLocator';
 import SafetyPlan from './SafetyPlan';
 import Resources from './Resources';
+import Testimonials from './Testimonials';
+import Report from './Report';
 
 const Home = () => {
   const [showQuickExit, setShowQuickExit] = useState(false);
@@ -113,6 +115,8 @@ const App = () => {
         <Route path="/resource-locator" element={<ResourceLocator />} />
         <Route path="/safety-plan" element={<SafetyPlan />} />
         <Route path="/resources" element={<Resources />} />
+        <Route path="/testimonials" element={<Testimonials />} />
+        <Route path="/report" element={<Report />} />
       </Routes>
     </Router>
   );
