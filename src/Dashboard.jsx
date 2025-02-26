@@ -14,7 +14,7 @@ const Dashboard = () => {
   const chatbotRef = useRef(null);
   const resourceRef = useRef(null);
   const riskRef = useRef(null);
-  const legalRef = useRef(null);
+  const supportRef = useRef(null);
   const reportRef = useRef(null);
   const testimonialsRef = useRef(null);
 
@@ -35,7 +35,7 @@ const Dashboard = () => {
           <button onClick={() => scrollToSection(chatbotRef)} className="nav-link">AI Support</button>
           <button onClick={() => scrollToSection(resourceRef)} className="nav-link">Resources</button>
           <button onClick={() => scrollToSection(riskRef)} className="nav-link">Risk Assessment</button>
-          <button onClick={() => scrollToSection(legalRef)} className="nav-link">Legal Aid</button>
+          <button onClick={() => scrollToSection(supportRef)} className="nav-link">support</button>
           <button onClick={() => scrollToSection(reportRef)} className="nav-link">Report</button>
           <button onClick={() => scrollToSection(testimonialsRef)} className="nav-link">Testimonials</button>
         </div>
@@ -94,11 +94,11 @@ const Dashboard = () => {
           <button className="card-btn">Start Assessment</button>
         </div>
 
-        <div ref={legalRef} className="card" style={{ backgroundColor: "#E5D5C3" }}>
+        <div ref={supportRef} className="card" style={{ backgroundColor: "#E5D5C3" }}>
           <FaBalanceScale size={30} color="blue" />
-          <h3>Counseling and Legal Aid Support</h3>
+          <h3>Support</h3>
           <p>Access guided counseling and legal services.</p>
-          <button className="card-btn">Get Support</button>
+          <button className="card-btn" onClick={() => navigate("/support")}>Get Support</button>
         </div>
 
         <div ref={reportRef} className="card" style={{ backgroundColor: "#E7CBCB" }}>

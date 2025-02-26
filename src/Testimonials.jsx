@@ -51,8 +51,9 @@ const initialStories = [
   }
 ]
 
-const Testimonials = ({ darkMode, setDarkMode }) => {
+const Testimonials = () => {
   const navigate = useNavigate()
+  const [darkMode, setDarkMode] = useState(false)
   const [stories, setStories] = useState(initialStories)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [newStory, setNewStory] = useState({ content: "", author: "" })
@@ -149,7 +150,7 @@ const Testimonials = ({ darkMode, setDarkMode }) => {
             <button onClick={() => navigate("/chatbot")} className="nav-link">AI Support</button>
             <button onClick={() => navigate("/resources")} className="nav-link">Resources</button>
             <button onClick={() => navigate("/risk-assessment")} className="nav-link">Risk Assessment</button>
-            <button onClick={() => navigate("/legal")} className="nav-link">Legal Aid</button>
+            <button onClick={() => navigate("/support")} className="nav-link">support</button>
             <button onClick={() => navigate("/report")} className="nav-link">Report</button>
             <button onClick={() => navigate("/testimonials")} className="nav-link active">Testimonials</button>
             <button onClick={() => navigate("/dashboard")} className="nav-link">Back to Dashboard</button>

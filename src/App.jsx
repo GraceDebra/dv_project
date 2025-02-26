@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import styles from './App.module.css';
 import Register from './Register';
-import Login from './Login';
-import Signup from './Signup';
 import Dashboard from './Dashboard'; 
 import ResourceLocator from './ResourceLocator';
 import SafetyPlan from './SafetyPlan';
 import Resources from './Resources';
 import Testimonials from './Testimonials';
 import Report from './Report';
+import Support from './Support';
 
 const Home = () => {
   const [showQuickExit, setShowQuickExit] = useState(false);
@@ -109,14 +108,13 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/register" element={<Register />} />
-        <Route path="/login" element={<Login />} />
-        <Route path="/signup" element={<Signup />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/resource-locator" element={<ResourceLocator />} />
         <Route path="/safety-plan" element={<SafetyPlan />} />
         <Route path="/resources" element={<Resources />} />
         <Route path="/testimonials" element={<Testimonials />} />
         <Route path="/report" element={<Report />} />
+        <Route path="/support" element={<Support />} />
       </Routes>
     </Router>
   );

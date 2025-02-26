@@ -6,7 +6,8 @@ import { FaSun, FaMoon, FaArrowLeft, FaArrowRight } from "react-icons/fa"
 import { useNavigate } from "react-router-dom"
 import "./Resources.css"
 
-const Resources = ({ darkMode, setDarkMode }) => {
+const Resources = () => {
+  const [darkMode, setDarkMode] = useState(false)
   const navigate = useNavigate()
   const [openCardIndex, setOpenCardIndex] = useState(null)
 
@@ -22,7 +23,7 @@ const Resources = ({ darkMode, setDarkMode }) => {
           <button onClick={() => navigate("/chatbot")} className="nav-link">AI Support</button>
           <button onClick={() => navigate("/resources")} className="nav-link">Resources</button>
           <button onClick={() => navigate("/risk-assessment")} className="nav-link">Risk Assessment</button>
-          <button onClick={() => navigate("/legal")} className="nav-link">Legal Aid</button>
+          <button onClick={() => navigate("/support")} className="nav-link">support</button>
           <button onClick={() => navigate("/report")} className="nav-link">Report</button>
           <button onClick={() => navigate("/testimonials")} className="nav-link">Testimonials</button>
           <button onClick={() => navigate("/dashboard")} className="nav-link">Back to Dashboard</button>

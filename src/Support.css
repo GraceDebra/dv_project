@@ -1,0 +1,329 @@
+/* General Styles */
+/* Change background color for light mode */
+.support-container {
+  background-color: #f8f9fa;
+  color: #333;
+  min-height: 100vh;
+  padding: 20px;
+  transition: background-color 0.3s ease-in-out;
+}
+
+/* Dark mode background */
+.support-container.dark {
+  background-color: #2d2d2d;
+  color: #fff;
+}
+
+
+/* Navigation */
+/* Light mode nav bar */
+.nav {
+  background-color: #d8f3dc; /* Soft pastel green */
+  padding: 15px 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  transition: background-color 0.3s ease-in-out;
+}
+
+.nav-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 90%;
+  margin: 0 auto;
+}
+
+/* Navigation links */
+.nav-links {
+  display: flex;
+  gap: 15px;
+}
+
+.nav-link {
+  background: transparent;
+  border: none;
+  color: #333;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 10px 15px;
+  border-radius: 8px;
+  transition: background 0.3s ease, color 0.3s ease;
+}
+
+.nav-link:hover,
+.nav-link.active {
+  background-color: #95d5b2; /* Slightly deeper green */
+  color: #fff;
+}
+
+/* Quick Exit & Theme Toggle */
+.quick-exit,
+.theme-toggle {
+  background-color: #52b788;
+  color: white;
+  font-weight: bold;
+  padding: 8px 12px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.3s ease-in-out;
+}
+
+.quick-exit:hover,
+.theme-toggle:hover {
+  background-color: #40916c;
+}
+
+/* Dark mode nav bar */
+.support-container.dark .nav {
+  background-color: #2d2d2d; /* Darker background for contrast */
+}
+
+.support-container.dark .nav-link {
+  color: #ddd;
+}
+
+.support-container.dark .nav-link:hover,
+.support-container.dark .nav-link.active {
+  background-color: #495057;
+  color: #fff;
+}
+
+/* Hero Section */
+.hero-section {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.hero-title {
+  font-size: 24px;
+  font-weight: bold;
+}
+
+/* Section Buttons */
+.section-buttons {
+  margin-top: 15px;
+}
+
+.section-button {
+  margin: 10px;
+  padding: 10px 20px;
+  border: none;
+  cursor: pointer;
+  background-color: #ddd;
+  border-radius: 5px;
+}
+
+.section-button.active {
+  background-color: #6200ea;
+  color: white;
+}
+
+/* Main Content */
+.main-content {
+  margin-top: 30px;
+}
+
+/* Support Sections */
+.support-section {
+  margin-bottom: 30px;
+}
+
+.support-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+/* Support Cards */
+.support-card {
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  text-align: center;
+  background-color: #f9f9f9;
+  transition: transform 0.3s ease-in-out;
+}
+
+.support-card:hover {
+  transform: translateY(-5px);
+}
+
+.support-title {
+  font-size: 18px;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+.support-description {
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+/* Counselor Cards (Non-expandable) */
+.counselor-card {
+  background-color: #ffffff;
+  padding: 15px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: transform 0.3s ease-in-out;
+}
+
+.counselor-card:hover {
+  transform: translateY(-5px);
+}
+
+.counselor-name {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.counselor-specialty {
+  font-size: 14px;
+  color: #666;
+  margin-top: 5px;
+}
+
+.counselor-experience {
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+/* Contact Buttons */
+.contact-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.contact-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  background-color: #6200ea;
+  color: white;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.contact-button:hover {
+  background-color: #4b00c2;
+}
+
+.whatsapp-button {
+  background-color: #25d366;
+}
+
+.whatsapp-button:hover {
+  background-color: #1da851;
+}
+
+.call-button {
+  background-color: #007bff;
+}
+
+.call-button:hover {
+  background-color: #0056b3;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .support-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .nav-links button {
+    font-size: 14px;
+    margin-right: 10px;
+  }
+
+  .hero-title {
+    font-size: 20px;
+  }
+
+  .section-button {
+    font-size: 14px;
+    padding: 8px 16px;
+  }
+
+  .contact-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .contact-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+.join-button {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background-color 0.3s ease;
+}
+
+.join-button:hover {
+  background-color: #0056b3;
+}
+.support-card:nth-child(1) { background-color: #f8f0fc; border-left: 5px solid #b197fc; } /* Light Purple */
+.support-card:nth-child(2) { background-color: #fff0f6; border-left: 5px solid #f783ac; } /* Soft Pink */
+.support-card:nth-child(3) { background-color: #e7f5ff; border-left: 5px solid #4dabf7; } /* Light Blue */
+.support-card:nth-child(4) { background-color: #f4fce3; border-left: 5px solid #94d82d; } /* Light Green */
+.support-card:nth-child(5) { background-color: #fff4e6; border-left: 5px solid #ff922b; } /* Soft Orange */
+.support-card:nth-child(6) { background-color: #ebfbee; border-left: 5px solid #51cf66; } /* Pastel Green */
+.support-card:nth-child(7) { background-color: #f1f3f5; border-left: 5px solid #868e96; } /* Grey */
+.support-card:nth-child(8) { background-color: #ffe8cc; border-left: 5px solid #ff9f1a; } /* Warm Orange */
+.support-card:nth-child(9) { background-color: #dbe4ff; border-left: 5px solid #748ffc; } /* Cool Blue */
+
+.support-card {
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease-in-out;
+}
+
+.support-card:hover {
+  transform: translateY(-5px);
+}
+
+.support-title {
+  font-weight: bold;
+  font-size: 1.2rem;
+  color: #333;
+}
+
+.support-description {
+  font-size: 1rem;
+  color: #555;
+}
+
+.learn-more {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 6px 12px;
+  background-color: #007bff; /* Light Blue */
+  color: white;
+  font-size: 14px;
+  font-weight: bold;
+  border-radius: 5px;
+  text-decoration: none;
+  transition: background 0.3s ease-in-out;
+}
+
+.learn-more:hover {
+  background-color: #0056b3; /* Darker Blue */
+  text-decoration: none;
+}
