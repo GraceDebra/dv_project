@@ -5,7 +5,8 @@ import { useNavigate } from "react-router-dom"
 import { FaUser, FaUserSecret, FaUpload, FaExclamationTriangle, FaSun, FaMoon, FaShieldAlt } from "react-icons/fa"
 import "./Report.css"
 
-const Reporting = ({ darkMode, setDarkMode }) => {
+const Reporting = () => {
+  const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate()
   const [isAnonymous, setIsAnonymous] = useState(false)
   const [formData, setFormData] = useState({
