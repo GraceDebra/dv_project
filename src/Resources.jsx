@@ -174,7 +174,7 @@ const quizQuestions = [
     correctAnswer: "Emergency contact numbers",
   },
   {
-    question: "Which resource is available 24/7 for DV survivors in the US?",
+    question: "Which resource is available 24/7 for DV survivors in the KENYA?",
     options: ["Local library", "National DV Hotline", "Post office", "DMV"],
     correctAnswer: "National DV Hotline",
   },

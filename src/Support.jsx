@@ -136,7 +136,7 @@ const Support = () => {
   const counselors = [
     { name: "Dr. Amina Yusuf", specialty: "Trauma & PTSD Specialist", experience: "10+ years of experience in trauma counseling", phone: "+254700123456", whatsapp: "https://wa.me/254700123456" },
     { name: "John Ochieng", specialty: "Mental Health Expert", experience: "Specializing in domestic abuse recovery", phone: "+254711654321", whatsapp: "https://wa.me/254711654321" },
-    { name: "Grace Mwikali", specialty: "Psychologist", experience: "Providing emotional and psychological support", phone: "+254722987654", whatsapp: "https://wa.me/254722987654" },
+    { name: "Grace Mwikali", specialty: "Psychologist", experience: "Providing emotional and psychological support", phone: "+254793743772", whatsapp: "https://wa.me/254793743772" },
   ];
 
   return (

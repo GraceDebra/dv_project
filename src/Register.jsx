@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { X, Eye, EyeOff } from "lucide-react"
+import { registerUser, loginUser, testServerConnection } from "./services/api"
 import "./Register.css"
 
 export default function Register() {
@@ -11,45 +12,158 @@ export default function Register() {
   const [showForgotPassword, setShowForgotPassword] = useState(false)
   const [forgotPasswordEmail, setForgotPasswordEmail] = useState("")
   const [forgotPasswordMessage, setForgotPasswordMessage] = useState("")
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [apiError, setApiError] = useState("")
+  const [serverStatus, setServerStatus] = useState({
+    checked: false,
+    running: false,
+    message: "Checking server connection...",
+  })
+
+  // Test server connection on component mount with retry logic
+  useEffect(() => {
+    let retryCount = 0
+    const maxRetries = 3
+
+    const checkServerConnection = async () => {
+      try {
+        console.log(`Attempting to connect to server (attempt ${retryCount + 1}/${maxRetries + 1})...`)
+        await testServerConnection()
+        setServerStatus({
+          checked: true,
+          running: true,
+          message: "Connected successfully",
+        })
+        console.log("Server connection successful!")
+      } catch (error) {
+        console.error("Server Connection Test Failed:", error)
+
+        if (retryCount < maxRetries) {
+          retryCount++
+          const retryDelay = 2000 // 2 seconds between retries
+          console.log(`Retrying in ${retryDelay / 1000} seconds...`)
+
+          setServerStatus({
+            checked: true,
+            running: false,
+            message: `Connection failed. Retrying (${retryCount}/${maxRetries})...`,
+          })
+
+          setTimeout(checkServerConnection, retryDelay)
+        } else {
+          setServerStatus({
+            checked: true,
+            running: false,
+            message: error.message || "Server connection failed after multiple attempts",
+          })
+
+          // Show more detailed error message
+          alert(
+            `Server is unavailable. Please check:\n1. Backend server running\n2. Network connection\n3. Firewall settings\n\nError details: ${error.message}`,
+          )
+        }
+      }
+    }
+
+    checkServerConnection()
+
+    // Optional: Add periodic reconnection attempts if initial connection fails
+    const connectionInterval = setInterval(() => {
+      if (!serverStatus.running && serverStatus.checked) {
+        checkServerConnection()
+      }
+    }, 30000) // Try every 30 seconds
+
+    return () => clearInterval(connectionInterval)
+  }, [])
 
   const validateForm = (formData) => {
     const newErrors = {}
 
     if (isSignIn) {
-      const username = formData.get("username")
+      const email = formData.get("email")
       const password = formData.get("password")
 
-      if (!username) newErrors.username = "Username is required"
+      if (!email) newErrors.email = "Email is required"
       if (!password) newErrors.password = "Password is required"
     } else {
-      const username = formData.get("username")
+      const fullName = formData.get("fullName")
       const email = formData.get("email")
       const password = formData.get("password")
       const confirmPassword = formData.get("confirmPassword")
 
-      if (!username) newErrors.username = "Username is required"
+      if (!fullName) newErrors.fullName = "Full name is required"
       if (!email) newErrors.email = "Email is required"
       if (!password) newErrors.password = "Password is required"
       if (password !== confirmPassword) newErrors.confirmPassword = "Passwords do not match"
+      if (password && password.length < 6) newErrors.password = "Password must be at least 6 characters long"
     }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
+    setIsSubmitting(true)
+    setApiError("")
+
+    // Check server status before attempting submission
+    if (!serverStatus.running) {
+      const proceed = window.confirm(
+        "The server appears to be offline. Your request may fail. Do you want to try anyway?",
+      )
+      if (!proceed) {
+        setIsSubmitting(false)
+        return
+      }
+    }
+
     const formData = new FormData(e.target)
     if (validateForm(formData)) {
-      if (isSignIn) {
-        // Redirect to dashboard on successful sign in
-        window.location.href = "/dashboard"
-      } else {
-        // Clear form fields and switch to sign in mode on successful sign up
-        e.target.reset()
-        setIsSignIn(true)
-        alert("Account created successfully. Please sign in.")
+      try {
+        if (isSignIn) {
+          // Handle sign in
+          const credentials = {
+            email: formData.get("email"),
+            password: formData.get("password"),
+          }
+
+          console.log("Submitting login with:", credentials.email)
+          const response = await loginUser(credentials)
+
+          // Store the token in localStorage
+          localStorage.setItem("authToken", response.token)
+
+          // Store user data if needed
+          localStorage.setItem("userData", JSON.stringify(response.user))
+
+          // Redirect to dashboard
+          window.location.href = "/dashboard"
+        } else {
+          // Handle registration
+          const userData = {
+            fullName: formData.get("fullName"),
+            email: formData.get("email"),
+            password: formData.get("password"),
+          }
+
+          const response = await registerUser(userData)
+
+          // Show success message
+          alert("Registration successful! Please sign in to continue.")
+
+          // Clear form fields and switch to sign in mode on successful sign up
+          e.target.reset()
+          setIsSignIn(true)
+        }
+      } catch (error) {
+        setApiError(error.message)
+      } finally {
+        setIsSubmitting(false)
       }
+    } else {
+      setIsSubmitting(false)
     }
   }
 
@@ -69,9 +183,33 @@ export default function Register() {
     }, 3000)
   }
 
+  // Function to manually retry server connection
+  const retryConnection = async () => {
+    setServerStatus({
+      checked: false,
+      running: false,
+      message: "Retrying connection...",
+    })
+
+    try {
+      await testServerConnection()
+      setServerStatus({
+        checked: true,
+        running: true,
+        message: "Connected successfully",
+      })
+    } catch (error) {
+      setServerStatus({
+        checked: true,
+        running: false,
+        message: error.message || "Server connection failed",
+      })
+    }
+  }
+
   return (
     <div className="register-page-container">
-      <a href="https://www.google.com" className="escape-button" title="Quick Exit">
+      <a href="/" className="escape-button" title="Quick Exit">
         <X className="escape-icon" />
         <span className="sr-only">Exit quickly</span>
       </a>
@@ -107,35 +245,53 @@ export default function Register() {
           </div>
 
           <div className="form-container">
-            <form onSubmit={handleSubmit} className="auth-form">
-              <div className="form-group">
-                <label htmlFor="username" className="form-label">
-                  Username
-                </label>
-                <input
-                  id="username"
-                  name="username"
-                  placeholder="Enter your username"
-                  className={`form-input ${errors.username ? "input-error" : ""}`}
-                />
-                {errors.username && <p className="error-message">{errors.username}</p>}
+            {serverStatus.checked && !serverStatus.running && (
+              <div className="api-error-container">
+                <p className="api-error-message">
+                  Server Connection Error: Network Error: Unable to connect to server. Please check if the server is
+                  running at http://localhost:8081
+                </p>
+                <button onClick={retryConnection} className="retry-button">
+                  Retry Connection
+                </button>
               </div>
+            )}
 
+            {apiError && (
+              <div className="api-error-container">
+                <p className="api-error-message">{apiError}</p>
+              </div>
+            )}
+
+            <form onSubmit={handleSubmit} className="auth-form">
               {!isSignIn && (
                 <div className="form-group">
-                  <label htmlFor="email" className="form-label">
-                    Email
+                  <label htmlFor="fullName" className="form-label">
+                    Full Name
                   </label>
                   <input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    className={`form-input ${errors.email ? "input-error" : ""}`}
+                    id="fullName"
+                    name="fullName"
+                    placeholder="Enter your full name"
+                    className={`form-input ${errors.fullName ? "input-error" : ""}`}
                   />
-                  {errors.email && <p className="error-message">{errors.email}</p>}
+                  {errors.fullName && <p className="error-message">{errors.fullName}</p>}
                 </div>
               )}
+
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">
+                  Email
+                </label>
+                <input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="Enter your email"
+                  className={`form-input ${errors.email ? "input-error" : ""}`}
+                />
+                {errors.email && <p className="error-message">{errors.email}</p>}
+              </div>
 
               <div className="form-group">
                 <div className="password-header">
@@ -202,8 +358,8 @@ export default function Register() {
                 </div>
               )}
 
-              <button type="submit" className="submit-button">
-                {isSignIn ? "Sign In" : "Create Account"}
+              <button type="submit" className={`submit-button ${!serverStatus.running ? "submit-button-warning" : ""}`}>
+                {isSubmitting ? "Processing..." : isSignIn ? "Sign In" : "Create Account"}
               </button>
             </form>
 
@@ -215,6 +371,7 @@ export default function Register() {
                   onClick={() => {
                     setIsSignIn(!isSignIn)
                     setErrors({})
+                    setApiError("")
                   }}
                   className="toggle-form-button"
                 >

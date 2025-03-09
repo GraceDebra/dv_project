@@ -167,11 +167,11 @@
   background-color: white;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: light gray;
 }
 
 .dark .quiz-section {
-  background-color: #2a2a2a;
+  background-color: #ece4e4;
 }
 
 .quiz-section h3 {
@@ -192,7 +192,7 @@
 
 .quiz-options button {
   padding: 0.8rem;
-  background-color: #111010;
+  background-color: #f1e8e8;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -205,7 +205,7 @@
 }
 
 .quiz-options button:hover {
-  background-color: #0f0e0e;
+  background-color: #f3e0e0;
 }
 
 .dark .quiz-options button:hover {
