@@ -91,7 +91,7 @@ const Dashboard = () => {
           <FaExclamationTriangle size={30} color="red" />
           <h3>Risk Assessment</h3>
           <p>Evaluate your current risk level.</p>
-          <button className="card-btn">Start Assessment</button>
+          <button onClick={() => navigate("/assess")} className="card-btn">Start Assessment</button>
         </div>
 
         <div ref={supportRef} className="card" style={{ backgroundColor: "#E5D5C3" }}>
