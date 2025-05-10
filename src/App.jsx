@@ -9,6 +9,7 @@ import Resources from './Resources';
 import Testimonials from './Testimonials';
 import Report from './Report';
 import Support from './Support';
+import RiskAssessment from './RiskAssessment';
 
 const Home = () => {
   const [showQuickExit, setShowQuickExit] = useState(false);
@@ -23,6 +24,7 @@ const Home = () => {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
+        <div></div>
         <h1>Safe Haven</h1>
         <button 
           className={styles.escapeButton}
@@ -115,6 +117,7 @@ const App = () => {
         <Route path="/testimonials" element={<Testimonials />} />
         <Route path="/report" element={<Report />} />
         <Route path="/support" element={<Support />} />
+        <Route path="/risk-assessment" element={<RiskAssessment />} />
       </Routes>
     </Router>
   );
