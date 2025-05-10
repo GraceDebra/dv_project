@@ -218,10 +218,10 @@
 }
 
 .quiz-options button.correct {
-  background-color: #e62121 !important; /* Green for correct answers */
+  background-color: #ee6b6b !important; /* Green for correct answers */
   color: #111 !important; /* Dark text for readability */
   font-weight: bold;
-  border: 2px solid #fd1313; /* Slightly darker green border for emphasis */
+  border: 2px solid #ee6b6b; /* Slightly darker green border for emphasis */
 }
 
 
