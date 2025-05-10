@@ -4,6 +4,9 @@ import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 import dotenv from "dotenv"
 import pool from "./config/db.js"
+import resourcesAPI from "./api/resources.js" // Import the resources API
+import quizQuestionsAPI from "./api/quiz-questions.js" // Import the quiz questions API
+import testimonialsAPI from "./api/testimonials.js" // Import the testimonials API
 
 // Load environment variables
 dotenv.config()
@@ -12,7 +15,6 @@ dotenv.config()
 const app = express()
 
 // Reduce verbosity in server.js
-// Replace the detailed request logging middleware with a simpler version
 app.use((req, res, next) => {
   console.log(`${req.method} ${req.url}`)
   next()
@@ -78,6 +80,55 @@ app.get("/test-db", (req, res) => {
       error: error.message,
       timestamp: new Date().toISOString(),
     })
+  }
+})
+
+// Resources API routes
+app.get("/services/resources", resourcesAPI.getAll)
+app.post("/services/resources", resourcesAPI.create)
+
+// Quiz Questions API routes
+app.get("/services/quiz-questions", quizQuestionsAPI.getAll)
+app.post("/services/quiz-questions", quizQuestionsAPI.create)
+
+// Testimonials API routes - MOVED HERE after app initialization
+app.get("/services/testimonials", testimonialsAPI.getAll)
+app.post("/services/testimonials", testimonialsAPI.create)
+app.delete("/services/testimonials/:id", testimonialsAPI.remove)
+app.post("/services/testimonials/:id/comments", testimonialsAPI.addComment)
+app.delete("/services/testimonials/:id/comments/:commentId", testimonialsAPI.removeComment)
+
+// Add this route to your server.js file after the other testimonials routes
+app.get("/services/testimonials/user/:username", testimonialsAPI.getUserHistory)
+
+// Add a new route to verify user authentication
+app.get("/services/auth/verify", (req, res) => {
+  try {
+    const { token } = req.query
+
+    if (!token) {
+      return res.status(401).json({ authenticated: false, message: "No token provided" })
+    }
+
+    // Verify the token (this is a simplified example)
+    // In a real application, you would verify against your JWT secret
+    try {
+      const jwtSecret = process.env.JWT_SECRET || "your-default-secret-key"
+      const decoded = jwt.verify(token, jwtSecret)
+
+      return res.json({
+        authenticated: true,
+        user: {
+          id: decoded.id,
+          email: decoded.email,
+        },
+      })
+    } catch (tokenError) {
+      return res.status(401).json({ authenticated: false, message: "Invalid token" })
+    }
+  } catch (error) {
+    console.error("Error verifying authentication:", error)
+    res.status(500).json({ error: "Internal server error", details: error.message })
   }
 })
 
@@ -431,3 +482,4 @@ server.on("error", (error) => {
   process.exit(1)
 })
 
+export default app

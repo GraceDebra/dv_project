@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { FaSun, FaMoon, FaArrowLeft, FaArrowRight } from "react-icons/fa"
 import { useNavigate } from "react-router-dom"
@@ -10,9 +10,189 @@ const Resources = () => {
   const [darkMode, setDarkMode] = useState(false)
   const navigate = useNavigate()
   const [openCardIndex, setOpenCardIndex] = useState(null)
+  const [resourceData, setResourceData] = useState([])
+  const [quizQuestions, setQuizQuestions] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+
+  useEffect(() => {
+    // Fetch resource data from the API
+    const fetchResources = async () => {
+      try {
+        setLoading(true)
+        // Updated endpoints to match your server.js routes
+        const resourceResponse = await fetch("http://localhost:8081/services/resources")
+        const quizResponse = await fetch("http://localhost:8081/services/quiz-questions")
+
+        if (!resourceResponse.ok || !quizResponse.ok) {
+          throw new Error("Failed to fetch data")
+        }
+
+        const resourceData = await resourceResponse.json()
+        const quizData = await quizResponse.json()
+
+        // Transform the data if needed to match your component's expected format
+        const formattedResourceData = formatResourceData(resourceData)
+
+        setResourceData(formattedResourceData)
+        setQuizQuestions(quizData)
+        setLoading(false)
+      } catch (error) {
+        console.error("Error fetching data:", error)
+        setError("Failed to load resources. Please try again later.")
+        setLoading(false)
+      }
+    }
+
+    fetchResources()
+  }, [])
+
+  // Helper function to format resource data if needed
+  const formatResourceData = (data) => {
+    // If your API returns data in a different format than what your component expects,
+    // transform it here. This is just an example - adjust based on your actual API response.
+
+    // If the data is already in the right format, just return it
+    if (data.length > 0 && data[0].category && data[0].items) {
+      return data
+    }
+
+    // Otherwise, transform it to match your component's expected format
+    // This assumes your API returns an array of resources with title, description, etc.
+    const categories = {}
+
+    data.forEach((resource) => {
+      const category = resource.category || "Uncategorized"
+
+      if (!categories[category]) {
+        categories[category] = {
+          category,
+          color: getColorForCategory(category),
+          items: [],
+        }
+      }
+
+      // Add the resource as an item in the category
+      categories[category].items.push(
+        `${resource.title}: ${resource.description} ${resource.url ? `- ${resource.url}` : ""}`,
+      )
+    })
+
+    return Object.values(categories)
+  }
+
+  // Helper function to assign colors to categories
+  const getColorForCategory = (category) => {
+    const colors = {
+      Legal: "#4f46e5",
+      Health: "#10b981",
+      Safety: "#ef4444",
+      Support: "#f59e0b",
+      Education: "#6366f1",
+      Uncategorized: "#6b7280",
+    }
+
+    return colors[category] || colors["Uncategorized"]
+  }
 
   const handleQuickExit = () => {
     window.location.href = "https://www.weather.com"
+  }
+
+  if (loading) {
+    return (
+      <div className={`dashboard ${darkMode ? "dark" : "light"}`}>
+        <nav className="navbar">
+          {/* Navigation Bar */}
+          <div className="nav-links">
+            <button onClick={() => navigate("/chatbot")} className="nav-link">
+              AI Support
+            </button>
+            <button onClick={() => navigate("/resources")} className="nav-link">
+              Resources
+            </button>
+            <button onClick={() => navigate("/risk-assessment")} className="nav-link">
+              Risk Assessment
+            </button>
+            <button onClick={() => navigate("/support")} className="nav-link">
+              support
+            </button>
+            <button onClick={() => navigate("/report")} className="nav-link">
+              Report
+            </button>
+            <button onClick={() => navigate("/testimonials")} className="nav-link">
+              Testimonials
+            </button>
+            <button onClick={() => navigate("/dashboard")} className="nav-link">
+              Back to Dashboard
+            </button>
+          </div>
+
+          {/* Right Section - Quick Exit & Theme Toggle */}
+          <div className="nav-right">
+            <button className="quick-exit" onClick={handleQuickExit}>
+              Quick Exit
+            </button>
+            <button className="theme-toggle" onClick={() => setDarkMode(!darkMode)}>
+              {darkMode ? <FaSun /> : <FaMoon />}
+            </button>
+          </div>
+        </nav>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>Loading resources...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className={`dashboard ${darkMode ? "dark" : "light"}`}>
+        <nav className="navbar">
+          {/* Navigation Bar */}
+          <div className="nav-links">
+            <button onClick={() => navigate("/chatbot")} className="nav-link">
+              AI Support
+            </button>
+            <button onClick={() => navigate("/resources")} className="nav-link">
+              Resources
+            </button>
+            <button onClick={() => navigate("/risk-assessment")} className="nav-link">
+              Risk Assessment
+            </button>
+            <button onClick={() => navigate("/support")} className="nav-link">
+              support
+            </button>
+            <button onClick={() => navigate("/report")} className="nav-link">
+              Report
+            </button>
+            <button onClick={() => navigate("/testimonials")} className="nav-link">
+              Testimonials
+            </button>
+            <button onClick={() => navigate("/dashboard")} className="nav-link">
+              Back to Dashboard
+            </button>
+          </div>
+
+          {/* Right Section - Quick Exit & Theme Toggle */}
+          <div className="nav-right">
+            <button className="quick-exit" onClick={handleQuickExit}>
+              Quick Exit
+            </button>
+            <button className="theme-toggle" onClick={() => setDarkMode(!darkMode)}>
+              {darkMode ? <FaSun /> : <FaMoon />}
+            </button>
+          </div>
+        </nav>
+        <div className="error-container">
+          <p className="error-message">{error}</p>
+          <button onClick={() => window.location.reload()} className="retry-button">
+            Retry
+          </button>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -20,13 +200,27 @@ const Resources = () => {
       {/* Navigation Bar */}
       <nav className="navbar">
         <div className="nav-links">
-          <button onClick={() => navigate("/chatbot")} className="nav-link">AI Support</button>
-          <button onClick={() => navigate("/resources")} className="nav-link">Resources</button>
-          <button onClick={() => navigate("/risk-assessment")} className="nav-link">Risk Assessment</button>
-          <button onClick={() => navigate("/support")} className="nav-link">support</button>
-          <button onClick={() => navigate("/report")} className="nav-link">Report</button>
-          <button onClick={() => navigate("/testimonials")} className="nav-link">Testimonials</button>
-          <button onClick={() => navigate("/dashboard")} className="nav-link">Back to Dashboard</button>
+          <button onClick={() => navigate("/chatbot")} className="nav-link">
+            AI Support
+          </button>
+          <button onClick={() => navigate("/resources")} className="nav-link">
+            Resources
+          </button>
+          <button onClick={() => navigate("/risk-assessment")} className="nav-link">
+            Risk Assessment
+          </button>
+          <button onClick={() => navigate("/support")} className="nav-link">
+            support
+          </button>
+          <button onClick={() => navigate("/report")} className="nav-link">
+            Report
+          </button>
+          <button onClick={() => navigate("/testimonials")} className="nav-link">
+            Testimonials
+          </button>
+          <button onClick={() => navigate("/dashboard")} className="nav-link">
+            Back to Dashboard
+          </button>
         </div>
 
         {/* Right Section - Quick Exit & Theme Toggle */}
@@ -52,163 +246,11 @@ const Resources = () => {
             />
           ))}
         </div>
-        <Quiz />
+        <Quiz quizQuestions={quizQuestions} />
       </section>
     </div>
   )
 }
-
-const resourceData = [
-  {
-    category: "Understanding DV/IPV",
-    color: "#FF6B6B",
-    items: [
-      "Domestic violence (DV) occurs within a domestic setting",
-      "Intimate partner violence (IPV) involves current/former partners",
-      "Can include physical, emotional, sexual, and financial abuse",
-      "Affects people of all backgrounds, genders, and orientations",
-      "Often involves a pattern of power and control",
-      "Can escalate over time and have severe consequences",
-    ],
-  },
-  {
-    category: "Recognizing Signs",
-    color: "#4ECDC4",
-    items: [
-      "Controlling behavior and excessive jealousy",
-      "Isolation from friends and family",
-      "Verbal abuse, threats, and intimidation",
-      "Physical violence or threats of violence",
-      "Financial control or exploitation",
-      "Gaslighting and emotional manipulation",
-    ],
-  },
-  {
-    category: "Impact on Victims",
-    color: "#45B7D1",
-    items: [
-      "Physical injuries and health problems",
-      "Mental health issues like depression and PTSD",
-      "Loss of self-esteem and confidence",
-      "Economic instability and financial dependence",
-      "Social isolation and damaged relationships",
-      "Increased risk of substance abuse",
-    ],
-  },
-  {
-    category: "Safety Planning",
-    color: "#FF9FF3",
-    items: [
-      "Identify safe places to go in an emergency",
-      "Prepare an emergency bag with essentials",
-      "Memorize important phone numbers",
-      "Establish a code word with trusted friends/family",
-      "Plan safe exits from your home",
-      "Document incidents of abuse",
-    ],
-  },
-  {
-    category: "Support for Survivors",
-    color: "#FEC771",
-    items: [
-      "24/7 National Domestic Violence Hotline",
-      "Local women's shelters and safe houses",
-      "Counseling and therapy services",
-      "Support groups for survivors",
-      "Legal aid and advocacy organizations",
-      "Online resources and forums",
-    ],
-  },
-  {
-    category: "Legal Protections",
-    color: "#C5E99B",
-    items: [
-      "Restraining orders and protective orders",
-      "Emergency custody orders for children",
-      "Housing rights for survivors",
-      "Workplace protections against discrimination",
-      "Immigration options for non-citizen survivors",
-      "Victim compensation programs",
-    ],
-  },
-  {
-    category: "Helping Others",
-    color: "#A78BFA",
-    items: [
-      "Recognize the signs of abuse",
-      "Offer support without judgment",
-      "Respect the survivor's decisions",
-      "Provide resources and information",
-      "Help create a safety plan if asked",
-      "Report suspected abuse of children or vulnerable adults",
-    ],
-  },
-  {
-    category: "Prevention Strategies",
-    color: "#84CC16",
-    items: [
-      "Educate about healthy relationships",
-      "Promote gender equality and respect",
-      "Teach conflict resolution skills",
-      "Address root causes like poverty and substance abuse",
-      "Implement bystander intervention programs",
-      "Support comprehensive sex education in schools",
-    ],
-  },
-]
-
-const quizQuestions = [
-  {
-    question: "Which of the following is NOT a type of abuse?",
-    options: ["Physical", "Emotional", "Financial", "Recreational"],
-    correctAnswer: "Recreational",
-  },
-  {
-    question: "What is a common warning sign of an abusive relationship?",
-    options: ["Respect for boundaries", "Extreme jealousy", "Encouraging independence", "Open communication"],
-    correctAnswer: "Extreme jealousy",
-  },
-  {
-    question: "What should be included in a safety plan?",
-    options: ["A list of favorite movies", "Emergency contact numbers", "Grocery shopping list", "Work schedule"],
-    correctAnswer: "Emergency contact numbers",
-  },
-  {
-    question: "Which resource is available 24/7 for DV survivors in the KENYA?",
-    options: ["Local library", "National DV Hotline", "Post office", "DMV"],
-    correctAnswer: "National DV Hotline",
-  },
-  {
-    question: "What is a potential long-term effect of DV on children?",
-    options: [
-      "Improved academic performance",
-      "Stronger family bonds",
-      "Difficulty forming relationships",
-      "Increased self-esteem",
-    ],
-    correctAnswer: "Difficulty forming relationships",
-  },
-  {
-    question: "Which of the following is an example of financial abuse?",
-    options: [
-      "Sharing a joint bank account",
-      "Preventing a partner from working",
-      "Discussing monthly budgets",
-      "Saving for retirement",
-    ],
-    correctAnswer: "Preventing a partner from working",
-  },
-  {
-    question: "What is gaslighting in the context of emotional abuse?",
-    options: [
-      "Using gas-powered appliances",
-      "Turning off lights to save energy",
-      "Manipulating someone to doubt their own perceptions",
-      "A form of fire-starting",
-    ],
-    correctAnswer: "Manipulating someone to doubt their own perceptions",
-  },
-]
 
 const ResourceCard = ({ category, color, items, isOpen, onToggle }) => {
   return (
@@ -241,11 +283,18 @@ const ResourceCard = ({ category, color, items, isOpen, onToggle }) => {
   )
 }
 
-const Quiz = () => {
+const Quiz = ({ quizQuestions }) => {
   const [currentQuestion, setCurrentQuestion] = useState(0)
-  const [answers, setAnswers] = useState(new Array(quizQuestions.length).fill(null))
+  const [answers, setAnswers] = useState([])
   const [showResults, setShowResults] = useState(false)
   const [isReviewing, setIsReviewing] = useState(false)
+
+  // Initialize answers array when quizQuestions change
+  useEffect(() => {
+    if (quizQuestions && quizQuestions.length > 0) {
+      setAnswers(new Array(quizQuestions.length).fill(null))
+    }
+  }, [quizQuestions])
 
   const handleAnswer = (answer) => {
     const newAnswers = [...answers]
@@ -280,7 +329,14 @@ const Quiz = () => {
     (total, answer, index) => (answer === quizQuestions[index].correctAnswer ? total + 1 : total),
     0,
   )
-  
+
+  if (!quizQuestions || quizQuestions.length === 0) {
+    return (
+      <div className="quiz-section">
+        <p>No quiz questions available</p>
+      </div>
+    )
+  }
 
   return (
     <div className="quiz-section">
@@ -359,6 +415,4 @@ const Quiz = () => {
   )
 }
 
-
 export default Resources
-
