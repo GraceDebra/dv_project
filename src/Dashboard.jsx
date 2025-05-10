@@ -57,15 +57,6 @@ const Dashboard = () => {
         </div>
       </nav>
 
-      {/* Status Section */}
-      <div className="status-box">
-        <label>Current Status:</label>
-        <select className="status-dropdown">
-          <option>Safe</option>
-          <option>At Risk</option>
-        </select>
-      </div>
-
       {/* Quick Access Buttons */}
       <div className="quick-access">
         <button>
