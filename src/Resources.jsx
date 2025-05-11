@@ -105,27 +105,13 @@ const Resources = () => {
         <nav className="navbar">
           {/* Navigation Bar */}
           <div className="nav-links">
-            <button onClick={() => navigate("/chatbot")} className="nav-link">
-              AI Support
-            </button>
-            <button onClick={() => navigate("/resources")} className="nav-link">
-              Resources
-            </button>
-            <button onClick={() => navigate("/risk-assessment")} className="nav-link">
-              Risk Assessment
-            </button>
-            <button onClick={() => navigate("/support")} className="nav-link">
-              support
-            </button>
-            <button onClick={() => navigate("/report-incident")} className="nav-link">
-              Report Incident
-            </button>
-            <button onClick={() => navigate("/testimonials")} className="nav-link">
-              Testimonials
-            </button>
-            <button onClick={() => navigate("/dashboard")} className="nav-link">
-              Back to Dashboard
-            </button>
+            <button onClick={() => navigate("/chatbot")} className="nav-link">AI Support</button>
+            <button onClick={() => navigate("/resources")} className="nav-link"> Resources</button>
+            <button onClick={() => navigate("/risk-assessment")} className="nav-link">Risk Assessment</button>
+            <button onClick={() => navigate("/support")} className="nav-link">support</button>
+            <button onClick={() => navigate("/report-incident")} className="nav-link">Report Incident</button>
+            <button onClick={() => navigate("/testimonials")} className="nav-link">Testimonials</button>
+            <button onClick={() => navigate("/dashboard")} className="nav-link">Back to Dashboard</button>
           </div>
 
           {/* Right Section - Quick Exit & Theme Toggle */}
@@ -162,10 +148,10 @@ const Resources = () => {
               Risk Assessment
             </button>
             <button onClick={() => navigate("/support")} className="nav-link">
-              support
+              Support
             </button>
-            <button onClick={() => navigate("/report")} className="nav-link">
-              Report
+            <button onClick={() => navigate("/report-incident")} className="nav-link">
+              Report Incident
             </button>
             <button onClick={() => navigate("/testimonials")} className="nav-link">
               Testimonials
@@ -210,10 +196,10 @@ const Resources = () => {
             Risk Assessment
           </button>
           <button onClick={() => navigate("/support")} className="nav-link">
-            support
+            Support
           </button>
-          <button onClick={() => navigate("/report")} className="nav-link">
-            Report
+          <button onClick={() => navigate("/report-incident")} className="nav-link">
+            Report Incident
           </button>
           <button onClick={() => navigate("/testimonials")} className="nav-link">
             Testimonials
