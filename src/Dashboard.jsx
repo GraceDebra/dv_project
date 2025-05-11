@@ -43,7 +43,7 @@ const Dashboard = () => {
           <button onClick={() => scrollToSection(resourceRef)} className="nav-link">Resources</button>
           <button onClick={() => scrollToSection(riskRef)} className="nav-link">Risk Assessment</button>
           <button onClick={() => scrollToSection(supportRef)} className="nav-link">Support</button>
-          <button onClick={() => scrollToSection(reportRef)} className="nav-link">Report</button>
+          <button onClick={() => scrollToSection(reportRef)} className="nav-link">Report Incident</button>
           <button onClick={() => scrollToSection(testimonialsRef)} className="nav-link">Testimonials</button>
         </div>
 
@@ -87,7 +87,7 @@ const Dashboard = () => {
           <AlertTriangle size={30} />
           <h3>Risk Assessment</h3>
           <p>Evaluate your current risk level.</p>
-          <button onClick={() => navigate("/assess")} className="card-btn">Start Assessment</button>
+          <button onClick={() => navigate("/risk-assessment")} className="card-btn">Start Assessment</button>
         </div>
 
         <div ref={supportRef} className="card" style={{ backgroundColor: "#E5D5C3" }}>
@@ -101,7 +101,7 @@ const Dashboard = () => {
           <Flag size={30} />
           <h3>Report Incident</h3>
           <p>Report cases</p>
-          <button className="card-btn" onClick={() => navigate("/report")}>Report</button>
+          <button className="card-btn" onClick={() => navigate("/report-incident")}>Report</button>
         </div>
 
         <div ref={testimonialsRef} className="card" style={{ backgroundColor: "pink" }}>

@@ -59,7 +59,7 @@ const Reporting = () => {
           <button onClick={() => navigate("/resources")} className="nav-link">Resources</button>
           <button onClick={() => navigate("/risk-assessment")} className="nav-link">Risk Assessment</button>
           <button onClick={() => navigate("/support")} className="nav-link">Support</button>
-          <button onClick={() => navigate("/report")} className="nav-link">Report</button>
+          <button onClick={() => navigate("/report-incident")} className="nav-link">Report Incident</button>
           <button onClick={() => navigate("/testimonials")} className="nav-link">Testimonials</button>
           <button onClick={() => navigate("/dashboard")} className="nav-link">Back to Dashboard</button>
         </div>
@@ -123,7 +123,7 @@ const Reporting = () => {
                 </>
               )}
               <div className="form-group">
-                <label htmlFor="incidentType" style={{ color: 'black', fontSize: '24px', fontSize: '24px' }}>Incident Type:</label>
+                <label htmlFor="incidentType" style={{ color: 'black' }}>Incident Type:</label>
                 <select
                   id="incidentType"
                   name="incidentType"
@@ -155,7 +155,7 @@ const Reporting = () => {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="policeNotified" style={{ color: 'black', fontSize: '23px' }}>Have the police been notified?</label>
+                <label htmlFor="policeNotified" style={{ color: 'black' }}>Have the police been notified?</label>
                 <select
                   id="policeNotified"
                   name="policeNotified"

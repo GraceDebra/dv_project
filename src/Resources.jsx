@@ -117,8 +117,8 @@ const Resources = () => {
             <button onClick={() => navigate("/support")} className="nav-link">
               support
             </button>
-            <button onClick={() => navigate("/report")} className="nav-link">
-              Report
+            <button onClick={() => navigate("/report-incident")} className="nav-link">
+              Report Incident
             </button>
             <button onClick={() => navigate("/testimonials")} className="nav-link">
               Testimonials

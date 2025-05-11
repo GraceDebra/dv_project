@@ -149,7 +149,7 @@ const Support = () => {
             <button onClick={() => navigate("/resources")} className="nav-link">Resources</button>
             <button onClick={() => navigate("/risk-assessment")} className="nav-link">Risk Assessment</button>
             <button onClick={() => navigate("/support")} className="nav-link active">Support</button>
-            <button onClick={() => navigate("/report")} className="nav-link">Report</button>
+            <button onClick={() => navigate("/report-incident")} className="nav-link">Report Incident</button>
             <button onClick={() => navigate("/testimonials")} className="nav-link">Testimonials</button>
             <button onClick={() => navigate("/dashboard")} className="nav-link">Back to Dashboard</button>
           </div>
