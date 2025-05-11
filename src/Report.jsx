@@ -99,7 +99,7 @@ const Reporting = () => {
               {!isAnonymous && (
                 <>
                   <div className="form-group">
-                    <label htmlFor="name">Name:</label>
+                    <label htmlFor="name" style={{ color: 'black' }}>Name:</label>
                     <input
                       type="text"
                       id="name"
@@ -110,7 +110,7 @@ const Reporting = () => {
                     />
                   </div>
                   <div className="form-group">
-                    <label htmlFor="email">Email:</label>
+                    <label htmlFor="email" style={{ color: 'black' }}>Email:</label>
                     <input
                       type="email"
                       id="email"
@@ -123,7 +123,7 @@ const Reporting = () => {
                 </>
               )}
               <div className="form-group">
-                <label htmlFor="incidentType">Incident Type:</label>
+                <label htmlFor="incidentType" style={{ color: 'black', fontSize: '24px', fontSize: '24px' }}>Incident Type:</label>
                 <select
                   id="incidentType"
                   name="incidentType"
@@ -140,11 +140,11 @@ const Reporting = () => {
                 </select>
               </div>
               <div className="form-group">
-                <label htmlFor="date">Date of Incident:</label>
+                <label htmlFor="date" style={{ color: 'black' }}>Date of Incident:</label>
                 <input type="date" id="date" name="date" value={formData.date} onChange={handleInputChange} required />
               </div>
               <div className="form-group">
-                <label htmlFor="location">Location:</label>
+              <label htmlFor="location" style={{ color: 'black' }}>Location:</label>
                 <input
                   type="text"
                   id="location"
@@ -155,7 +155,7 @@ const Reporting = () => {
                 />
               </div>
               <div className="form-group">
-                <label htmlFor="policeNotified">Have the police been notified?</label>
+                <label htmlFor="policeNotified" style={{ color: 'black', fontSize: '23px' }}>Have the police been notified?</label>
                 <select
                   id="policeNotified"
                   name="policeNotified"
@@ -170,7 +170,7 @@ const Reporting = () => {
             </div>
 
             <div className="form-group full-width">
-              <label htmlFor="description">Description:</label>
+              <label htmlFor="description" style={{ color: 'black' }}>Description:</label>
               <textarea
                 id="description"
                 name="description"
@@ -180,27 +180,9 @@ const Reporting = () => {
               />
             </div>
 
-            <div className="form-group full-width">
-              <label htmlFor="severityLevel">Severity Level:</label>
-              <input
-                type="range"
-                id="severityLevel"
-                name="severityLevel"
-                min="1"
-                max="5"
-                value={formData.severityLevel}
-                onChange={handleInputChange}
-                required
-              />
-              <div className="severity-labels">
-                <span>Low</span>
-                <span>Medium</span>
-                <span>High</span>
-              </div>
-            </div>
 
             <div className="form-group full-width">
-              <label htmlFor="evidence" className="file-upload">
+              <label htmlFor="evidence"  style={{ color: 'black' }}className="file-upload">
                 <FaUpload /> Upload Evidence
               </label>
               <input

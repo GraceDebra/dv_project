@@ -59,9 +59,6 @@ const Dashboard = () => {
 
       {/* Quick Access Buttons */}
       <div className="quick-access">
-        <button>
-          <Bell size={18} /> Emergency Contacts
-        </button>
         <button onClick={() => navigate("/safety-plan")}>
           <Shield size={18} /> Safety Plan
         </button>

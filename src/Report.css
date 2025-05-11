@@ -3,7 +3,7 @@
     --secondary-color: #f39c12;
     --background-light: #f4f7f9;
     --background-dark: #1a202c;
-    --text-light: #0c0c0c;
+    --text-light: #181717;
     --text-dark: #f0f0f0;
     --input-bg-light: #fff;
     --input-bg-dark: #2d3748;
@@ -130,7 +130,7 @@
   .theme-toggle-btn {
     background-color: transparent;
     border: none;
-    color: #fff;
+    color: #1d1a1a;
     cursor: pointer;
     font-size: 1.2rem;
     transition: transform 0.3s ease;
@@ -144,7 +144,7 @@
     max-width: 800px;
     margin: 2rem auto;
     padding: 2rem;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: rgba(240, 243, 247, 0.9);
     border-radius: 8px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
     transition: all 0.3s ease;
@@ -250,6 +250,7 @@
   .form-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    font-size: medium;
     gap: 1.5rem;
   }
   
@@ -305,7 +306,7 @@
   textarea:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(117, 149, 187, 0.2);
+    box-shadow: 0 0 0 2px rgba(159, 194, 238, 0.2);
   }
   
   textarea {
@@ -313,11 +314,7 @@
     resize: vertical;
   }
   
-  .severity-labels {
-    display: flex;
-    justify-content: space-between;
-    margin-top: 0.5rem;
-  }
+  
   
   .file-upload {
     display: inline-block;

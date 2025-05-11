@@ -119,15 +119,7 @@ const ResourceLocator = () => {
         >
           Hospitals
         </button>
-        <button
-          className={`filter-button ${selectedType === "both" ? "active" : ""}`}
-          onClick={() => {
-            setSelectedType("both")
-            if (searchQuery) updateMap(searchQuery, "shelters and hospitals")
-          }}
-        >
-          Both
-        </button>
+        
       </div>
 
       <div className="map-container">
