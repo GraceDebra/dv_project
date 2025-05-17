@@ -151,16 +151,17 @@ export const loginUser = async (credentials) => {
   }
 }
 
-// Get all users with pagination
+// Get all users with pagination - matches the /services/users endpoint in Admin.jsx
 export const getAllUsers = async (page = 1, limit = 100) => {
   try {
-    console.log("Fetching all users from:", `${API_BASE_URL}/users`)
+    console.log("Fetching all users from:", `${API_BASE_URL}/services/users`)
     console.log("Pagination:", { page, limit })
 
-    const response = await fetch(`${API_BASE_URL}/users?page=${page}&limit=${limit}`, {
+    const response = await fetch(`${API_BASE_URL}/services/users?page=${page}&limit=${limit}`, {
       method: "GET",
       headers: {
         Accept: "application/json",
+        Authorization: localStorage.getItem("authToken") ? `Bearer ${localStorage.getItem("authToken")}` : "",
       },
     })
 
@@ -177,12 +178,13 @@ export const getAllUsers = async (page = 1, limit = 100) => {
 // Get user by ID
 export const getUserById = async (userId) => {
   try {
-    console.log("Fetching user by ID from:", `${API_BASE_URL}/users/${userId}`)
+    console.log("Fetching user by ID from:", `${API_BASE_URL}/services/users/${userId}`)
 
-    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+    const response = await fetch(`${API_BASE_URL}/services/users/${userId}`, {
       method: "GET",
       headers: {
         Accept: "application/json",
+        Authorization: localStorage.getItem("authToken") ? `Bearer ${localStorage.getItem("authToken")}` : "",
       },
     })
 
@@ -199,12 +201,13 @@ export const getUserById = async (userId) => {
 // Get user by email
 export const getUserByEmail = async (email) => {
   try {
-    console.log("Fetching user by email from:", `${API_BASE_URL}/users/email/${email}`)
+    console.log("Fetching user by email from:", `${API_BASE_URL}/services/users/email/${email}`)
 
-    const response = await fetch(`${API_BASE_URL}/users/email/${email}`, {
+    const response = await fetch(`${API_BASE_URL}/services/users/email/${email}`, {
       method: "GET",
       headers: {
         Accept: "application/json",
+        Authorization: localStorage.getItem("authToken") ? `Bearer ${localStorage.getItem("authToken")}` : "",
       },
     })
 
@@ -219,17 +222,18 @@ export const getUserByEmail = async (email) => {
 }
 
 // Update user status (active/inactive)
-export const updateUserStatus = async (userId, isActive) => {
+export const updateUserStatus = async (userId, status) => {
   try {
-    console.log("Updating user status at:", `${API_BASE_URL}/users/${userId}/status`)
-    console.log("Status data:", { isActive })
+    console.log("Updating user status at:", `${API_BASE_URL}/services/users/${userId}/status`)
+    console.log("Status data:", { status })
 
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/status`, {
+    const response = await fetch(`${API_BASE_URL}/services/users/${userId}/status`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
+        Authorization: localStorage.getItem("authToken") ? `Bearer ${localStorage.getItem("authToken")}` : "",
       },
-      body: JSON.stringify({ isActive }),
+      body: JSON.stringify({ status }),
     })
 
     return await handleResponse(response)
@@ -242,45 +246,22 @@ export const updateUserStatus = async (userId, isActive) => {
   }
 }
 
-// Update user role (admin/regular)
-export const updateUserRole = async (userId, isAdmin) => {
+// Delete a user
+export const deleteUser = async (userId) => {
   try {
-    console.log("Updating user role at:", `${API_BASE_URL}/users/${userId}/role`)
-    console.log("Role data:", { isAdmin })
+    console.log("Deleting user at:", `${API_BASE_URL}/services/users/${userId}`)
 
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/role`, {
-      method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ isAdmin }),
-    })
-
-    return await handleResponse(response)
-  } catch (error) {
-    console.error(`Error updating role for user ${userId}:`, error)
-    if (error.message.includes("Failed to fetch")) {
-      throw new Error("Unable to connect to the server. Please check your connection.")
-    }
-    throw error
-  }
-}
-
-// Delete user session
-export const deleteUserSession = async (sessionId) => {
-  try {
-    console.log("Deleting user session at:", `${API_BASE_URL}/sessions/${sessionId}`)
-
-    const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}`, {
+    const response = await fetch(`${API_BASE_URL}/services/users/${userId}`, {
       method: "DELETE",
       headers: {
-        Accept: "application/json",
+        "Content-Type": "application/json",
+        Authorization: localStorage.getItem("authToken") ? `Bearer ${localStorage.getItem("authToken")}` : "",
       },
     })
 
     return await handleResponse(response)
   } catch (error) {
-    console.error(`Error deleting session ${sessionId}:`, error)
+    console.error(`Error deleting user ${userId}:`, error)
     if (error.message.includes("Failed to fetch")) {
       throw new Error("Unable to connect to the server. Please check your connection.")
     }
@@ -291,12 +272,13 @@ export const deleteUserSession = async (sessionId) => {
 // Get user sessions
 export const getUserSessions = async (userId) => {
   try {
-    console.log("Fetching user sessions from:", `${API_BASE_URL}/users/${userId}/sessions`)
+    console.log("Fetching user sessions from:", `${API_BASE_URL}/services/users/${userId}/sessions`)
 
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/sessions`, {
+    const response = await fetch(`${API_BASE_URL}/services/users/${userId}/sessions`, {
       method: "GET",
       headers: {
         Accept: "application/json",
+        Authorization: localStorage.getItem("authToken") ? `Bearer ${localStorage.getItem("authToken")}` : "",
       },
     })
 
@@ -310,21 +292,137 @@ export const getUserSessions = async (userId) => {
   }
 }
 
-// Delete all sessions for a user
-export const deleteAllUserSessions = async (userId) => {
+// Delete user session
+export const deleteSession = async (sessionId) => {
   try {
-    console.log("Deleting all user sessions at:", `${API_BASE_URL}/users/${userId}/sessions`)
+    console.log("Deleting user session at:", `${API_BASE_URL}/services/sessions/${sessionId}`)
 
-    const response = await fetch(`${API_BASE_URL}/users/${userId}/sessions`, {
+    const response = await fetch(`${API_BASE_URL}/services/sessions/${sessionId}`, {
       method: "DELETE",
       headers: {
         Accept: "application/json",
+        Authorization: localStorage.getItem("authToken") ? `Bearer ${localStorage.getItem("authToken")}` : "",
+      },
+    })
+
+    return await handleResponse(response)
+  } catch (error) {
+    console.error(`Error deleting session ${sessionId}:`, error)
+    if (error.message.includes("Failed to fetch")) {
+      throw new Error("Unable to connect to the server. Please check your connection.")
+    }
+    throw error
+  }
+}
+
+// Delete all sessions for a user
+export const deleteAllUserSessions = async (userId) => {
+  try {
+    console.log("Deleting all user sessions at:", `${API_BASE_URL}/services/users/${userId}/sessions`)
+
+    const response = await fetch(`${API_BASE_URL}/services/users/${userId}/sessions`, {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+        Authorization: localStorage.getItem("authToken") ? `Bearer ${localStorage.getItem("authToken")}` : "",
       },
     })
 
     return await handleResponse(response)
   } catch (error) {
     console.error(`Error deleting all sessions for user ${userId}:`, error)
+    if (error.message.includes("Failed to fetch")) {
+      throw new Error("Unable to connect to the server. Please check your connection.")
+    }
+    throw error
+  }
+}
+
+// Get all resources
+export const getResources = async () => {
+  try {
+    console.log("Fetching resources from:", `${API_BASE_URL}/services/resources`)
+
+    const response = await fetch(`${API_BASE_URL}/services/resources`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: localStorage.getItem("authToken") ? `Bearer ${localStorage.getItem("authToken")}` : "",
+      },
+    })
+
+    return await handleResponse(response)
+  } catch (error) {
+    console.error("Error fetching resources:", error)
+    if (error.message.includes("Failed to fetch")) {
+      throw new Error("Unable to connect to the server. Please check your connection.")
+    }
+    throw error
+  }
+}
+
+// Get all quiz questions
+export const getQuizQuestions = async () => {
+  try {
+    console.log("Fetching quiz questions from:", `${API_BASE_URL}/services/quiz-questions`)
+
+    const response = await fetch(`${API_BASE_URL}/services/quiz-questions`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: localStorage.getItem("authToken") ? `Bearer ${localStorage.getItem("authToken")}` : "",
+      },
+    })
+
+    return await handleResponse(response)
+  } catch (error) {
+    console.error("Error fetching quiz questions:", error)
+    if (error.message.includes("Failed to fetch")) {
+      throw new Error("Unable to connect to the server. Please check your connection.")
+    }
+    throw error
+  }
+}
+
+// Get all testimonials
+export const getTestimonials = async () => {
+  try {
+    console.log("Fetching testimonials from:", `${API_BASE_URL}/services/testimonials`)
+
+    const response = await fetch(`${API_BASE_URL}/services/testimonials`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: localStorage.getItem("authToken") ? `Bearer ${localStorage.getItem("authToken")}` : "",
+      },
+    })
+
+    return await handleResponse(response)
+  } catch (error) {
+    console.error("Error fetching testimonials:", error)
+    if (error.message.includes("Failed to fetch")) {
+      throw new Error("Unable to connect to the server. Please check your connection.")
+    }
+    throw error
+  }
+}
+
+// Get all reports
+export const getReports = async () => {
+  try {
+    console.log("Fetching reports from:", `${API_BASE_URL}/services/reports`)
+
+    const response = await fetch(`${API_BASE_URL}/services/reports`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+        Authorization: localStorage.getItem("authToken") ? `Bearer ${localStorage.getItem("authToken")}` : "",
+      },
+    })
+
+    return await handleResponse(response)
+  } catch (error) {
+    console.error("Error fetching reports:", error)
     if (error.message.includes("Failed to fetch")) {
       throw new Error("Unable to connect to the server. Please check your connection.")
     }

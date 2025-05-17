@@ -698,6 +698,95 @@ app.get("/services/db/tables/:tableName/primary-key", async (req, res) => {
   }
 })
 
+// Add these functions to your server.js file, right before the error handler
+// These will ensure the user sessions functionality works properly
+
+// Check if user_sessions table exists
+app.get("/check-user-sessions-table", async (req, res) => {
+  try {
+    const exists = await pool.checkUserSessionsTable()
+
+    if (!exists) {
+      await pool.createUserSessionsTable()
+      res.json({ message: "User sessions table created successfully" })
+    } else {
+      res.json({ message: "User sessions table already exists" })
+    }
+  } catch (error) {
+    console.error("Error checking user sessions table:", error)
+    res.status(500).json({ error: "Database error", details: error.message })
+  }
+})
+
+// Get user sessions with improved error handling
+app.get("/services/users/:id/sessions", async (req, res) => {
+  try {
+    const userId = Number.parseInt(req.params.id)
+
+    // Check if user exists
+    const userResult = await pool.query(
+      `
+      SELECT id FROM users WHERE id = $1
+    `,
+      [userId],
+    )
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    // Check if sessions table exists
+    const tableExists = await pool.checkUserSessionsTable()
+    if (!tableExists) {
+      await pool.createUserSessionsTable()
+      return res.json([])
+    }
+
+    // Get sessions
+    const sessions = await pool.getUserSessions(userId)
+    res.json(sessions)
+  } catch (error) {
+    console.error("Error fetching user sessions:", error)
+    res.status(500).json({ error: "Failed to fetch user sessions", details: error.message })
+  }
+})
+
+// Delete all sessions for a user
+app.delete("/services/users/:id/sessions", async (req, res) => {
+  try {
+    const userId = Number.parseInt(req.params.id)
+
+    // Check if user exists
+    const userResult = await pool.query(
+      `
+      SELECT id FROM users WHERE id = $1
+    `,
+      [userId],
+    )
+
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    // Check if sessions table exists
+    const tableExists = await pool.checkUserSessionsTable()
+    if (!tableExists) {
+      return res.status(404).json({ error: "Sessions table does not exist" })
+    }
+
+    const success = await pool.deleteAllUserSessions(userId)
+
+    if (!success) {
+      return res.status(500).json({ error: "Failed to delete user sessions" })
+    }
+
+    res.json({ message: "All sessions deleted successfully" })
+  } catch (error) {
+    console.error("Error deleting user sessions:", error)
+    res.status(500).json({ error: "Failed to delete user sessions", details: error.message })
+  }
+})
+
 // Add global error handler
 app.use((err, req, res, next) => {
   console.error("Global Error Handler:", err)
@@ -730,260 +819,124 @@ const server = app.listen(PORT, HOST, () => {
 // Add these routes to your Express server
 
 // Get all users
-app.get('/services/users', async (req, res) => {
+app.get("/services/users", async (req, res) => {
   try {
-    const page = parseInt(req.query.page) || 1;
-    const limit = parseInt(req.query.limit) || 100;
-    
-    const result = await pool.getAllUsers(page, limit);
-    res.json(result.users);
+    const page = Number.parseInt(req.query.page) || 1
+    const limit = Number.parseInt(req.query.limit) || 100
+
+    const result = await pool.getAllUsers(page, limit)
+    res.json(result.users)
   } catch (error) {
-    console.error('Error fetching users:', error);
-    res.status(500).json({ error: 'Failed to fetch users' });
+    console.error("Error fetching users:", error)
+    res.status(500).json({ error: "Failed to fetch users" })
   }
-});
+})
 
 // Get user by ID
-app.get('/services/users/:id', async (req, res) => {
+app.get("/services/users/:id", async (req, res) => {
   try {
-    const userId = parseInt(req.params.id);
-    const user = await pool.getUserById(userId);
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    res.json(user);
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    res.status(500).json({ error: 'Failed to fetch user' });
-  }
-});
+    const userId = Number.parseInt(req.params.id)
+    const user = await pool.getUserById(userId)
 
-// Get user sessions
-app.get('/services/users/:id/sessions', async (req, res) => {
-  try {
-    const userId = parseInt(req.params.id);
-    
-    // Check if user exists
-    const user = await pool.getUserById(userId);
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" })
     }
-    
-    const sessions = await pool.getUserSessions(userId);
-    res.json(sessions);
-  } catch (error) {
-    console.error('Error fetching user sessions:', error);
-    res.status(500).json({ error: 'Failed to fetch user sessions' });
-  }
-});
 
-// Delete a user session
-app.delete('/services/sessions/:id', async (req, res) => {
-  try {
-    const sessionId = parseInt(req.params.id);
-    const result = await pool.deleteUserSession(sessionId);
-    
-    if (!result) {
-      return res.status(404).json({ error: 'Session not found or could not be deleted' });
-    }
-    
-    res.json({ message: 'Session terminated successfully' });
+    res.json(user)
   } catch (error) {
-    console.error('Error deleting session:', error);
-    res.status(500).json({ error: 'Failed to delete session' });
+    console.error("Error fetching user:", error)
+    res.status(500).json({ error: "Failed to fetch user" })
   }
-});
+})
 
 // Update user status (active/inactive)
-app.put('/services/users/:id/status', async (req, res) => {
+app.put("/services/users/:id/status", async (req, res) => {
   try {
-    const userId = parseInt(req.params.id);
-    const { isActive } = req.body;
-    
-    if (typeof isActive !== 'boolean') {
-      return res.status(400).json({ error: 'isActive must be a boolean' });
+    const userId = Number.parseInt(req.params.id)
+    const { status } = req.body
+
+    if (!status || !["active", "inactive", "admin"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status value" })
     }
-    
-    const user = await pool.updateUserStatus(userId, isActive);
-    
+
+    const isActive = status === "active"
+    const user = await pool.updateUserStatus(userId, isActive)
+
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" })
     }
-    
-    res.json(user);
+
+    res.json(user)
   } catch (error) {
-    console.error('Error updating user status:', error);
-    res.status(500).json({ error: 'Failed to update user status' });
+    console.error("Error updating user status:", error)
+    res.status(500).json({ error: "Failed to update user status", details: error.message })
   }
-});
+})
 
 // Update user role (admin/user)
-app.put('/services/users/:id/role', async (req, res) => {
+app.put("/services/users/:id/role", async (req, res) => {
   try {
-    const userId = parseInt(req.params.id);
-    const { isAdmin } = req.body;
-    
-    if (typeof isAdmin !== 'boolean') {
-      return res.status(400).json({ error: 'isAdmin must be a boolean' });
+    const userId = Number.parseInt(req.params.id)
+    const { isAdmin } = req.body
+
+    if (typeof isAdmin !== "boolean") {
+      return res.status(400).json({ error: "isAdmin must be a boolean" })
     }
-    
-    const user = await pool.updateUserRole(userId, isAdmin);
-    
+
+    const user = await pool.updateUserRole(userId, isAdmin)
+
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" })
     }
-    
-    res.json(user);
-  } catch (error) {
-    console.error('Error updating user role:', error);
-    res.status(500).json({ error: 'Failed to update user role' });
-  }
-});
-// Add these routes to your server.js file
 
-// Get user sessions
-app.get('/services/users/:id/sessions', async (req, res) => {
-  try {
-    const userId = parseInt(req.params.id);
-    
-    // Check if user exists
-    const userResult = await pool.query(`
-      SELECT id FROM users WHERE id = $1
-    `, [userId]);
-    
-    if (userResult.rows.length === 0) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    // Check if sessions table exists
-    const tableExists = await pool.checkUserSessionsTable();
-    if (!tableExists) {
-      await pool.createUserSessionsTable();
-      return res.json([]);
-    }
-    
-    // Get sessions
-    const sessions = await pool.getUserSessions(userId);
-    res.json(sessions);
+    res.json(user)
   } catch (error) {
-    console.error('Error fetching user sessions:', error);
-    res.status(500).json({ error: 'Failed to fetch user sessions', details: error.message });
+    console.error("Error updating user role:", error)
+    res.status(500).json({ error: "Failed to update user role", details: error.message })
   }
-});
-
-// Delete a user session
-app.delete('/services/sessions/:id', async (req, res) => {
-  try {
-    const sessionId = parseInt(req.params.id);
-    
-    // Check if sessions table exists
-    const tableExists = await pool.checkUserSessionsTable();
-    if (!tableExists) {
-      return res.status(404).json({ error: 'Sessions table does not exist' });
-    }
-    
-    const result = await pool.deleteUserSession(sessionId);
-    
-    if (!result) {
-      return res.status(404).json({ error: 'Session not found or could not be deleted' });
-    }
-    
-    res.json({ message: 'Session terminated successfully' });
-  } catch (error) {
-    console.error('Error deleting session:', error);
-    res.status(500).json({ error: 'Failed to delete session', details: error.message });
-  }
-});
-
-// Update user status (active/inactive)
-app.put('/services/users/:id/status', async (req, res) => {
-  try {
-    const userId = parseInt(req.params.id);
-    const { status } = req.body;
-    
-    if (!status || !['active', 'inactive', 'admin'].includes(status)) {
-      return res.status(400).json({ error: 'Invalid status value' });
-    }
-    
-    const isActive = status === 'active';
-    const user = await pool.updateUserStatus(userId, isActive);
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    res.json(user);
-  } catch (error) {
-    console.error('Error updating user status:', error);
-    res.status(500).json({ error: 'Failed to update user status', details: error.message });
-  }
-});
-
-// Update user role (admin/user)
-app.put('/services/users/:id/role', async (req, res) => {
-  try {
-    const userId = parseInt(req.params.id);
-    const { isAdmin } = req.body;
-    
-    if (typeof isAdmin !== 'boolean') {
-      return res.status(400).json({ error: 'isAdmin must be a boolean' });
-    }
-    
-    const user = await pool.updateUserRole(userId, isAdmin);
-    
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-    
-    res.json(user);
-  } catch (error) {
-    console.error('Error updating user role:', error);
-    res.status(500).json({ error: 'Failed to update user role', details: error.message });
-  }
-});
+})
 
 // Create a session when a user logs in
 // This middleware should be added after your existing login route
 app.use((req, res, next) => {
   // Store the original send method
-  const originalSend = res.send;
-  
+  const originalSend = res.send
+
   // Override the send method
-  res.send = function(body) {
+  res.send = function (body) {
     // Only process for login route
-    if (req.path === '/login' && req.method === 'POST') {
+    if (req.path === "/login" && req.method === "POST") {
       try {
-        const responseData = JSON.parse(body);
-        
+        const responseData = JSON.parse(body)
+
         if (responseData.token && responseData.user && responseData.user.id) {
           // Create a session
-          const token = responseData.token;
-          const userId = responseData.user.id;
-          const ipAddress = req.ip || req.connection.remoteAddress;
-          const userAgent = req.headers['user-agent'];
-          
+          const token = responseData.token
+          const userId = responseData.user.id
+          const ipAddress = req.ip || req.connection.remoteAddress
+          const userAgent = req.headers["user-agent"]
+
           // Set expiration to 1 day from now
-          const expiresAt = new Date();
-          expiresAt.setDate(expiresAt.getDate() + 1);
-          
+          const expiresAt = new Date()
+          expiresAt.setDate(expiresAt.getDate() + 1)
+
           // Create the session asynchronously (don't wait for it)
-          pool.createUserSession(userId, token, ipAddress, userAgent, expiresAt)
-            .then(() => console.log('Session created for user', userId))
-            .catch(err => console.error('Error creating session:', err));
+          pool
+            .createUserSession(userId, token, ipAddress, userAgent, expiresAt)
+            .then(() => console.log("Session created for user", userId))
+            .catch((err) => console.error("Error creating session:", err))
         }
       } catch (error) {
-        console.error('Error processing login response:', error);
+        console.error("Error processing login response:", error)
       }
     }
-    
+
     // Call the original send
-    return originalSend.call(this, body);
-  };
-  
-  next();
-});
+    return originalSend.call(this, body)
+  }
+
+  next()
+})
 // Add proper error handling for the server
 server.on("error", (error) => {
   if (error.code === "EADDRINUSE") {
