@@ -151,3 +151,183 @@ export const loginUser = async (credentials) => {
   }
 }
 
+// Get all users with pagination
+export const getAllUsers = async (page = 1, limit = 100) => {
+  try {
+    console.log("Fetching all users from:", `${API_BASE_URL}/users`)
+    console.log("Pagination:", { page, limit })
+
+    const response = await fetch(`${API_BASE_URL}/users?page=${page}&limit=${limit}`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    })
+
+    return await handleResponse(response)
+  } catch (error) {
+    console.error("Error fetching users:", error)
+    if (error.message.includes("Failed to fetch")) {
+      throw new Error("Unable to connect to the server. Please check your connection.")
+    }
+    throw error
+  }
+}
+
+// Get user by ID
+export const getUserById = async (userId) => {
+  try {
+    console.log("Fetching user by ID from:", `${API_BASE_URL}/users/${userId}`)
+
+    const response = await fetch(`${API_BASE_URL}/users/${userId}`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    })
+
+    return await handleResponse(response)
+  } catch (error) {
+    console.error(`Error fetching user with ID ${userId}:`, error)
+    if (error.message.includes("Failed to fetch")) {
+      throw new Error("Unable to connect to the server. Please check your connection.")
+    }
+    throw error
+  }
+}
+
+// Get user by email
+export const getUserByEmail = async (email) => {
+  try {
+    console.log("Fetching user by email from:", `${API_BASE_URL}/users/email/${email}`)
+
+    const response = await fetch(`${API_BASE_URL}/users/email/${email}`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    })
+
+    return await handleResponse(response)
+  } catch (error) {
+    console.error(`Error fetching user with email ${email}:`, error)
+    if (error.message.includes("Failed to fetch")) {
+      throw new Error("Unable to connect to the server. Please check your connection.")
+    }
+    throw error
+  }
+}
+
+// Update user status (active/inactive)
+export const updateUserStatus = async (userId, isActive) => {
+  try {
+    console.log("Updating user status at:", `${API_BASE_URL}/users/${userId}/status`)
+    console.log("Status data:", { isActive })
+
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/status`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ isActive }),
+    })
+
+    return await handleResponse(response)
+  } catch (error) {
+    console.error(`Error updating status for user ${userId}:`, error)
+    if (error.message.includes("Failed to fetch")) {
+      throw new Error("Unable to connect to the server. Please check your connection.")
+    }
+    throw error
+  }
+}
+
+// Update user role (admin/regular)
+export const updateUserRole = async (userId, isAdmin) => {
+  try {
+    console.log("Updating user role at:", `${API_BASE_URL}/users/${userId}/role`)
+    console.log("Role data:", { isAdmin })
+
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/role`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ isAdmin }),
+    })
+
+    return await handleResponse(response)
+  } catch (error) {
+    console.error(`Error updating role for user ${userId}:`, error)
+    if (error.message.includes("Failed to fetch")) {
+      throw new Error("Unable to connect to the server. Please check your connection.")
+    }
+    throw error
+  }
+}
+
+// Delete user session
+export const deleteUserSession = async (sessionId) => {
+  try {
+    console.log("Deleting user session at:", `${API_BASE_URL}/sessions/${sessionId}`)
+
+    const response = await fetch(`${API_BASE_URL}/sessions/${sessionId}`, {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+      },
+    })
+
+    return await handleResponse(response)
+  } catch (error) {
+    console.error(`Error deleting session ${sessionId}:`, error)
+    if (error.message.includes("Failed to fetch")) {
+      throw new Error("Unable to connect to the server. Please check your connection.")
+    }
+    throw error
+  }
+}
+
+// Get user sessions
+export const getUserSessions = async (userId) => {
+  try {
+    console.log("Fetching user sessions from:", `${API_BASE_URL}/users/${userId}/sessions`)
+
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/sessions`, {
+      method: "GET",
+      headers: {
+        Accept: "application/json",
+      },
+    })
+
+    return await handleResponse(response)
+  } catch (error) {
+    console.error(`Error fetching sessions for user ${userId}:`, error)
+    if (error.message.includes("Failed to fetch")) {
+      throw new Error("Unable to connect to the server. Please check your connection.")
+    }
+    throw error
+  }
+}
+
+// Delete all sessions for a user
+export const deleteAllUserSessions = async (userId) => {
+  try {
+    console.log("Deleting all user sessions at:", `${API_BASE_URL}/users/${userId}/sessions`)
+
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/sessions`, {
+      method: "DELETE",
+      headers: {
+        Accept: "application/json",
+      },
+    })
+
+    return await handleResponse(response)
+  } catch (error) {
+    console.error(`Error deleting all sessions for user ${userId}:`, error)
+    if (error.message.includes("Failed to fetch")) {
+      throw new Error("Unable to connect to the server. Please check your connection.")
+    }
+    throw error
+  }
+}
