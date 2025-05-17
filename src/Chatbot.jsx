@@ -31,7 +31,7 @@ const Chatbot = () => {
     setMessages((prev) => [...prev, userMessage]);
 
     try {
-      const res = await fetch("http://localhost:5005/webhooks/rest/webhook", {
+     const res = await fetch("https://8286-102-213-251-138.ngrok-free.app/webhooks/rest/webhook", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ sender: "user", message: input }),
