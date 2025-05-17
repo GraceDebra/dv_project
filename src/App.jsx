@@ -12,6 +12,8 @@ import Testimonials from "./Testimonials"
 import Report from "./Report"
 import Support from "./Support"
 import RiskAssessment from "./RiskAssessment"
+import Admin from "./Admin"
+import AISupport from "./AISupport"
 import Chatbot from "./Chatbot"
 
 const Home = () => {
@@ -255,7 +257,6 @@ const App = () => {
         <Route path="/report-incident" element={<Report/>} />
         <Route path="/support" element={<Support />} />
         <Route path="/risk-assessment" element={<RiskAssessment />} />
-        <Route path="/chatbott" element={<Chatbot />} />
       </Routes>
     </Router>
   )

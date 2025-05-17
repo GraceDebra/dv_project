@@ -73,7 +73,7 @@ const Dashboard = () => {
           <Bot size={30} />
           <h3>AI Support Chatbot</h3>
           <p>Get immediate support and guidance.</p>
-          <button className="card-btn">Open Chatbot</button>
+          <button className="card-btn" onClick={() => navigate("/chatbot")}>Open Chatbot</button>
         </div>
 
         <div ref={resourceRef} className="card" style={{ backgroundColor: "#96ceb4" }}>
