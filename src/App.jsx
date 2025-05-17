@@ -256,7 +256,10 @@ const App = () => {
         <Route path="/testimonials" element={<Testimonials />} />
         <Route path="/report-incident" element={<Report/>} />
         <Route path="/support" element={<Support />} />
+        {/*<Route path="/chatbot" element={<AISupport />} /> */}
+        <Route path="/chatbot" element={<Chatbot />} />
         <Route path="/risk-assessment" element={<RiskAssessment />} />
+
       </Routes>
     </Router>
   )
