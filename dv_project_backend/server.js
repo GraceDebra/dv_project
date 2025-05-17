@@ -7,9 +7,31 @@ import pool from "./config/db.js"
 import resourcesAPI from "./api/resources.js" // Import the resources API
 import quizQuestionsAPI from "./api/quiz-questions.js" // Import the quiz questions API
 import testimonialsAPI from "./api/testimonials.js" // Import the testimonials API
+import reportsAPI from "./api/report.js"
 
 // Load environment variables
 dotenv.config()
+
+/**
+ * Database Schema for Users Table:
+ *
+ * -- CreateTable
+ * CREATE TABLE "users" (
+ *     "id" SERIAL NOT NULL,
+ *     "full_name" VARCHAR(100) NOT NULL,
+ *     "email" VARCHAR(100) NOT NULL,
+ *     "password" TEXT NOT NULL,
+ *     "created_at" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+ *     "status" VARCHAR(20) DEFAULT 'inactive',
+ *     "last_login" TIMESTAMP(6),
+ *     "registration_time" TIMESTAMP(6) DEFAULT CURRENT_TIMESTAMP,
+ *
+ *     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
+ * );
+ *
+ * -- CreateIndex
+ * CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
+ */
 
 // Create Express app
 const app = express()
@@ -20,11 +42,11 @@ app.use((req, res, next) => {
   next()
 })
 
-// More permissive CORS configuration
+// Replace your current CORS configuration with this to allow DELETE and PUT methods:
 app.use(
   cors({
     origin: "*", // Allow all origins for testing
-    methods: ["GET", "POST", "OPTIONS"],
+    methods: ["GET", "POST", "DELETE", "PUT", "OPTIONS"], // Added DELETE and PUT methods
     allowedHeaders: ["Content-Type", "Authorization"],
   }),
 )
@@ -100,6 +122,111 @@ app.delete("/services/testimonials/:id/comments/:commentId", testimonialsAPI.rem
 
 // Add this route to your server.js file after the other testimonials routes
 app.get("/services/testimonials/user/:username", testimonialsAPI.getUserHistory)
+
+// Reports API routes
+app.get("/services/reports", reportsAPI.getAll)
+app.get("/services/reports/:id", reportsAPI.getById)
+app.post("/services/reports", reportsAPI.create)
+app.put("/services/reports/:id/status", reportsAPI.updateStatus)
+app.get("/services/reports/user/:email", reportsAPI.getByUser)
+app.get("/services/reports/status/:status", reportsAPI.getByStatus)
+app.get("/services/reports/stats/type", reportsAPI.getStatsByType)
+app.get("/services/reports/stats/status", reportsAPI.getStatsByStatus)
+app.post("/services/reports/:id/comments", reportsAPI.addComment)
+app.get("/services/reports/:id/comments", reportsAPI.getComments)
+app.delete("/services/reports/:id/comments/:commentId", reportsAPI.deleteComment)
+app.put("/services/reports/:id/assign", reportsAPI.assignReport)
+app.post("/services/reports/:id/evidence", reportsAPI.uploadEvidence)
+
+// Users API routes - these match the schema defined above
+app.get("/services/users", async (req, res) => {
+  try {
+    // Get all users with sensitive information excluded
+    const { rows: users } = await pool.query(`
+      SELECT id, full_name, email, status, created_at, last_login, registration_time
+      FROM users
+      ORDER BY id
+    `)
+
+    res.json(users)
+  } catch (error) {
+    console.error("Error fetching users:", error)
+    res.status(500).json({ error: "Database error", details: error.message })
+  }
+})
+
+// Delete a user
+app.delete("/services/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params
+
+    // Delete the user
+    const result = await pool.query(`DELETE FROM users WHERE id = $1 RETURNING id`, [id])
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    res.json({ message: "User deleted successfully", id })
+  } catch (error) {
+    console.error("Error deleting user:", error)
+    res.status(500).json({ error: "Database error", details: error.message })
+  }
+})
+
+// Update user status
+app.put("/services/users/:id/status", async (req, res) => {
+  try {
+    const { id } = req.params
+    const { status } = req.body
+
+    if (!status || !["active", "inactive", "admin"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status value" })
+    }
+
+    const result = await pool.query(
+      `UPDATE users SET status = $1 WHERE id = $2 RETURNING id, full_name, email, status`,
+      [status, id],
+    )
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    res.json({
+      message: "User status updated successfully",
+      user: result.rows[0],
+    })
+  } catch (error) {
+    console.error("Error updating user status:", error)
+    res.status(500).json({ error: "Database error", details: error.message })
+  }
+})
+
+// Get user by ID
+app.get("/services/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params
+
+    const result = await pool.query(
+      `
+      SELECT id, full_name, email, status, created_at, last_login, registration_time
+      FROM users 
+      WHERE id = $1
+    `,
+      [id],
+    )
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" })
+    }
+
+    res.json(result.rows[0])
+  } catch (error) {
+    console.error("Error fetching user:", error)
+    res.status(500).json({ error: "Database error", details: error.message })
+  }
+})
 
 // Add a new route to verify user authentication
 app.get("/services/auth/verify", (req, res) => {
@@ -442,6 +569,135 @@ app.get("/check-tables", async (req, res) => {
   }
 })
 
+// Add these endpoints to your server.js file before the error handler
+
+// Get all table names in the database
+app.get("/services/db/tables", async (req, res) => {
+  try {
+    const { rows } = await pool.query(`
+      SELECT table_name 
+      FROM information_schema.tables 
+      WHERE table_schema = 'public'
+      ORDER BY table_name;
+    `)
+
+    res.json(rows)
+  } catch (error) {
+    console.error("Error fetching tables:", error)
+    res.status(500).json({ error: "Database error", details: error.message })
+  }
+})
+
+// Get table structure (columns)
+app.get("/services/db/tables/:tableName/structure", async (req, res) => {
+  try {
+    const { tableName } = req.params
+
+    // Validate table name to prevent SQL injection
+    const validTableNameRegex = /^[a-zA-Z0-9_]+$/
+    if (!validTableNameRegex.test(tableName)) {
+      return res.status(400).json({ error: "Invalid table name" })
+    }
+
+    const { rows } = await pool.query(
+      `
+      SELECT column_name, data_type, is_nullable, 
+             column_default, character_maximum_length
+      FROM information_schema.columns
+      WHERE table_name = $1
+      ORDER BY ordinal_position;
+    `,
+      [tableName],
+    )
+
+    res.json(rows)
+  } catch (error) {
+    console.error(`Error fetching structure for table ${req.params.tableName}:`, error)
+    res.status(500).json({ error: "Database error", details: error.message })
+  }
+})
+
+// Get data from a table
+app.get("/services/db/tables/:tableName/data", async (req, res) => {
+  try {
+    const { tableName } = req.params
+    const { limit = 100, offset = 0, orderBy = "id", direction = "ASC" } = req.query
+
+    // Validate table name to prevent SQL injection
+    const validTableNameRegex = /^[a-zA-Z0-9_]+$/
+    if (!validTableNameRegex.test(tableName)) {
+      return res.status(400).json({ error: "Invalid table name" })
+    }
+
+    // Validate orderBy column to prevent SQL injection
+    const validColumnRegex = /^[a-zA-Z0-9_]+$/
+    if (!validColumnRegex.test(orderBy)) {
+      return res.status(400).json({ error: "Invalid order by column" })
+    }
+
+    // Validate direction
+    const validDirection =
+      direction.toUpperCase() === "ASC" || direction.toUpperCase() === "DESC" ? direction.toUpperCase() : "ASC"
+
+    // Get total count
+    const countResult = await pool.query(`SELECT COUNT(*) FROM "${tableName}"`)
+    const total = Number.parseInt(countResult.rows[0].count)
+
+    // Get data with pagination and ordering
+    const { rows } = await pool.query(
+      `
+      SELECT * FROM "${tableName}"
+      ORDER BY "${orderBy}" ${validDirection}
+      LIMIT $1 OFFSET $2
+    `,
+      [limit, offset],
+    )
+
+    res.json({
+      data: rows,
+      pagination: {
+        total,
+        limit: Number.parseInt(limit),
+        offset: Number.parseInt(offset),
+        orderBy,
+        direction: validDirection,
+      },
+    })
+  } catch (error) {
+    console.error(`Error fetching data for table ${req.params.tableName}:`, error)
+    res.status(500).json({ error: "Database error", details: error.message })
+  }
+})
+
+// Get primary key for a table
+app.get("/services/db/tables/:tableName/primary-key", async (req, res) => {
+  try {
+    const { tableName } = req.params
+
+    // Validate table name to prevent SQL injection
+    const validTableNameRegex = /^[a-zA-Z0-9_]+$/
+    if (!validTableNameRegex.test(tableName)) {
+      return res.status(400).json({ error: "Invalid table name" })
+    }
+
+    const { rows } = await pool.query(
+      `
+      SELECT a.attname as column_name
+      FROM pg_index i
+      JOIN pg_attribute a ON a.attrelid = i.indrelid AND a.attnum = ANY(i.indkey)
+      WHERE i.indrelid = $1::regclass
+      AND i.indisprimary;
+    `,
+      [tableName],
+    )
+
+    res.json(rows.length > 0 ? rows[0].column_name : "id")
+  } catch (error) {
+    console.error(`Error fetching primary key for table ${req.params.tableName}:`, error)
+    res.status(500).json({ error: "Database error", details: error.message })
+  }
+})
+
 // Add global error handler
 app.use((err, req, res, next) => {
   console.error("Global Error Handler:", err)
@@ -471,7 +727,263 @@ const server = app.listen(PORT, HOST, () => {
   console.log("- DB_PASSWORD:", process.env.DB_PASSWORD ? "Set" : "Not set (using default)")
   console.log("- DB_PORT:", process.env.DB_PORT || "5432 (default)")
 })
+// Add these routes to your Express server
 
+// Get all users
+app.get('/services/users', async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 100;
+    
+    const result = await pool.getAllUsers(page, limit);
+    res.json(result.users);
+  } catch (error) {
+    console.error('Error fetching users:', error);
+    res.status(500).json({ error: 'Failed to fetch users' });
+  }
+});
+
+// Get user by ID
+app.get('/services/users/:id', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const user = await pool.getUserById(userId);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json(user);
+  } catch (error) {
+    console.error('Error fetching user:', error);
+    res.status(500).json({ error: 'Failed to fetch user' });
+  }
+});
+
+// Get user sessions
+app.get('/services/users/:id/sessions', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    
+    // Check if user exists
+    const user = await pool.getUserById(userId);
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    const sessions = await pool.getUserSessions(userId);
+    res.json(sessions);
+  } catch (error) {
+    console.error('Error fetching user sessions:', error);
+    res.status(500).json({ error: 'Failed to fetch user sessions' });
+  }
+});
+
+// Delete a user session
+app.delete('/services/sessions/:id', async (req, res) => {
+  try {
+    const sessionId = parseInt(req.params.id);
+    const result = await pool.deleteUserSession(sessionId);
+    
+    if (!result) {
+      return res.status(404).json({ error: 'Session not found or could not be deleted' });
+    }
+    
+    res.json({ message: 'Session terminated successfully' });
+  } catch (error) {
+    console.error('Error deleting session:', error);
+    res.status(500).json({ error: 'Failed to delete session' });
+  }
+});
+
+// Update user status (active/inactive)
+app.put('/services/users/:id/status', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const { isActive } = req.body;
+    
+    if (typeof isActive !== 'boolean') {
+      return res.status(400).json({ error: 'isActive must be a boolean' });
+    }
+    
+    const user = await pool.updateUserStatus(userId, isActive);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json(user);
+  } catch (error) {
+    console.error('Error updating user status:', error);
+    res.status(500).json({ error: 'Failed to update user status' });
+  }
+});
+
+// Update user role (admin/user)
+app.put('/services/users/:id/role', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const { isAdmin } = req.body;
+    
+    if (typeof isAdmin !== 'boolean') {
+      return res.status(400).json({ error: 'isAdmin must be a boolean' });
+    }
+    
+    const user = await pool.updateUserRole(userId, isAdmin);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json(user);
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    res.status(500).json({ error: 'Failed to update user role' });
+  }
+});
+// Add these routes to your server.js file
+
+// Get user sessions
+app.get('/services/users/:id/sessions', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    
+    // Check if user exists
+    const userResult = await pool.query(`
+      SELECT id FROM users WHERE id = $1
+    `, [userId]);
+    
+    if (userResult.rows.length === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    // Check if sessions table exists
+    const tableExists = await pool.checkUserSessionsTable();
+    if (!tableExists) {
+      await pool.createUserSessionsTable();
+      return res.json([]);
+    }
+    
+    // Get sessions
+    const sessions = await pool.getUserSessions(userId);
+    res.json(sessions);
+  } catch (error) {
+    console.error('Error fetching user sessions:', error);
+    res.status(500).json({ error: 'Failed to fetch user sessions', details: error.message });
+  }
+});
+
+// Delete a user session
+app.delete('/services/sessions/:id', async (req, res) => {
+  try {
+    const sessionId = parseInt(req.params.id);
+    
+    // Check if sessions table exists
+    const tableExists = await pool.checkUserSessionsTable();
+    if (!tableExists) {
+      return res.status(404).json({ error: 'Sessions table does not exist' });
+    }
+    
+    const result = await pool.deleteUserSession(sessionId);
+    
+    if (!result) {
+      return res.status(404).json({ error: 'Session not found or could not be deleted' });
+    }
+    
+    res.json({ message: 'Session terminated successfully' });
+  } catch (error) {
+    console.error('Error deleting session:', error);
+    res.status(500).json({ error: 'Failed to delete session', details: error.message });
+  }
+});
+
+// Update user status (active/inactive)
+app.put('/services/users/:id/status', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const { status } = req.body;
+    
+    if (!status || !['active', 'inactive', 'admin'].includes(status)) {
+      return res.status(400).json({ error: 'Invalid status value' });
+    }
+    
+    const isActive = status === 'active';
+    const user = await pool.updateUserStatus(userId, isActive);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json(user);
+  } catch (error) {
+    console.error('Error updating user status:', error);
+    res.status(500).json({ error: 'Failed to update user status', details: error.message });
+  }
+});
+
+// Update user role (admin/user)
+app.put('/services/users/:id/role', async (req, res) => {
+  try {
+    const userId = parseInt(req.params.id);
+    const { isAdmin } = req.body;
+    
+    if (typeof isAdmin !== 'boolean') {
+      return res.status(400).json({ error: 'isAdmin must be a boolean' });
+    }
+    
+    const user = await pool.updateUserRole(userId, isAdmin);
+    
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+    
+    res.json(user);
+  } catch (error) {
+    console.error('Error updating user role:', error);
+    res.status(500).json({ error: 'Failed to update user role', details: error.message });
+  }
+});
+
+// Create a session when a user logs in
+// This middleware should be added after your existing login route
+app.use((req, res, next) => {
+  // Store the original send method
+  const originalSend = res.send;
+  
+  // Override the send method
+  res.send = function(body) {
+    // Only process for login route
+    if (req.path === '/login' && req.method === 'POST') {
+      try {
+        const responseData = JSON.parse(body);
+        
+        if (responseData.token && responseData.user && responseData.user.id) {
+          // Create a session
+          const token = responseData.token;
+          const userId = responseData.user.id;
+          const ipAddress = req.ip || req.connection.remoteAddress;
+          const userAgent = req.headers['user-agent'];
+          
+          // Set expiration to 1 day from now
+          const expiresAt = new Date();
+          expiresAt.setDate(expiresAt.getDate() + 1);
+          
+          // Create the session asynchronously (don't wait for it)
+          pool.createUserSession(userId, token, ipAddress, userAgent, expiresAt)
+            .then(() => console.log('Session created for user', userId))
+            .catch(err => console.error('Error creating session:', err));
+        }
+      } catch (error) {
+        console.error('Error processing login response:', error);
+      }
+    }
+    
+    // Call the original send
+    return originalSend.call(this, body);
+  };
+  
+  next();
+});
 // Add proper error handling for the server
 server.on("error", (error) => {
   if (error.code === "EADDRINUSE") {

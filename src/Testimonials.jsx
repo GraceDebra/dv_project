@@ -2,19 +2,7 @@
 
 import { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-import {
-  FaSun,
-  FaMoon,
-  FaTrash,
-  FaQuoteLeft,
-  FaQuoteRight,
-  FaHeart,
-  FaUser,
-  FaHistory,
-  FaSmile,
-  FaSignInAlt,
-  FaSignOutAlt,
-} from "react-icons/fa"
+import { FaSun, FaMoon,  FaTrash,  FaQuoteLeft,  FaQuoteRight,  FaHeart,  FaUser,  FaHistory,  FaSmile,  FaSignInAlt,  FaSignOutAlt,} from "react-icons/fa"
 import EmojiPicker from "emoji-picker-react"
 import "./Testimonials.css"
 
