@@ -12,6 +12,7 @@ import Testimonials from "./Testimonials"
 import Report from "./Report"
 import Support from "./Support"
 import RiskAssessment from "./RiskAssessment"
+import Chatbot from "./Chatbot"
 
 const Home = () => {
   const [showQuickExit, setShowQuickExit] = useState(false)
@@ -254,6 +255,7 @@ const App = () => {
         <Route path="/report-incident" element={<Report/>} />
         <Route path="/support" element={<Support />} />
         <Route path="/risk-assessment" element={<RiskAssessment />} />
+        <Route path="/chatbott" element={<Chatbot />} />
       </Routes>
     </Router>
   )
