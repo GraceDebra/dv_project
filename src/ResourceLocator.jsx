@@ -3,23 +3,30 @@
 import { useState, useRef } from "react"
 import "./ResourceLocator.css"
 import { Search, MapPin, X, ArrowLeft } from "lucide-react"
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"
 
 const ResourceLocator = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [loading, setLoading] = useState(false)
-  const [selectedType, setSelectedType] = useState("shelters")
+  const [selectedType, setSelectedType] = useState("shelters") // Default to shelters
   const mapRef = useRef(null)
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const updateMap = (location, type) => {
     if (mapRef.current) {
       setLoading(true)
       const query = `${type} near ${location}`
       const encodedQuery = encodeURIComponent(query)
-      const mapUrl = `https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=${encodedQuery}`
+      // Original map URL structure maintained
+      const mapUrl = `https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=$${encodedQuery}`
       mapRef.current.src = mapUrl
-      setLoading(false)
+      mapRef.current.onload = () => {
+        setLoading(false)
+      }
+      mapRef.current.onerror = () => {
+        setLoading(false)
+        alert("Failed to load map. Please check your internet connection or try again later.")
+      }
     }
   }
 
@@ -43,8 +50,9 @@ const ResourceLocator = () => {
         (error) => {
           console.error("Error getting location:", error)
           setLoading(false)
-          alert("Unable to get your location. Please enter it manually.")
+          alert("Unable to get your location. Please enable location services or enter it manually.")
         },
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       )
     } else {
       alert("Geolocation is not supported by your browser. Please enter your location manually.")
@@ -52,57 +60,66 @@ const ResourceLocator = () => {
   }
 
   return (
-    <div className="resource-locator">
-    <div className="safety-exit">
-      <button
-        className="exit-button"
-        onClick={() => (window.location.href = "https://weather.com")}
-        aria-label="Exit to weather website"
-      >
-        <X /> Quick Exit
-      </button>
-
-      <button
-        className="dashboard-button"
-        onClick={() => navigate("/dashboard")}
-        aria-label="Back to Dashboard"
-      >
-        <ArrowLeft /> Back to Dashboard
-      </button>
-    </div>
-  
-
-      <div className="header">
-        <h1>Find Help</h1>
-        <p>Find shelters and hospitals near you</p>
+    <div className="resource-locator-container">
+      <div className="header-actions">
+        <button
+          className="back-to-dashboard-button"
+          onClick={() => navigate("/dashboard")}
+          aria-label="Back to Dashboard"
+        >
+          <ArrowLeft size={18} /> Back to Dashboard
+        </button>
+        <button
+          className="quick-exit-button"
+          onClick={() => (window.location.href = "https://weather.com")}
+          aria-label="Quick Exit"
+        >
+          Quick Exit <X size={18} />
+        </button>
       </div>
 
-      <div className="search-container">
-        <form onSubmit={handleSearch}>
-          <div className="search-input-container">
-            <Search className="search-icon" />
+      <header className="resource-header">
+        <h1>Find Local Resources</h1>
+        <p>Locate nearby shelters and hospitals to get the help you need.</p>
+      </header>
+
+      <section className="search-section">
+        <form onSubmit={handleSearch} className="search-form">
+          <div className="input-wrapper">
             <input
               type="text"
-              placeholder="Enter your location..."
+              placeholder="Enter your location or address..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="search-input"
+              className="location-input"
             />
-          </div>
-          <div className="search-buttons">
-            <button type="submit" className="search-button">
-              Search
+            {/* Search icon and clear button at the end */}
+            {searchQuery && (
+              <button
+                type="button"
+                className="clear-search-button"
+                onClick={() => setSearchQuery("")}
+                aria-label="Clear search query"
+              >
+                <X size={18} />
+              </button>
+            )}
+            <button type="submit" className="search-icon-button" aria-label="Search">
+              <Search size={20} />
             </button>
-            <button type="button" className="location-button" onClick={handleUseCurrentLocation}>
-              <MapPin size={16} /> Use my location
+          </div>
+          {/* Moved 'Use Current Location' button to its own container for centering */}
+          <div className="use-location-button-container">
+            <button type="button" className="button secondary-button" onClick={handleUseCurrentLocation}>
+              <MapPin size={18} /> Use Current Location
             </button>
           </div>
         </form>
-      </div>
+      </section>
 
-      <div className="filter-container">
+      <section className="filter-section">
         <button
-          className={`filter-button ${selectedType === "shelters" ? "active" : ""}`}
+          className={`filter-toggle ${selectedType === "shelters" ? "active" : ""}`}
           onClick={() => {
             setSelectedType("shelters")
             if (searchQuery) updateMap(searchQuery, "shelters")
@@ -111,7 +128,7 @@ const ResourceLocator = () => {
           Shelters
         </button>
         <button
-          className={`filter-button ${selectedType === "hospitals" ? "active" : ""}`}
+          className={`filter-toggle ${selectedType === "hospitals" ? "active" : ""}`}
           onClick={() => {
             setSelectedType("hospitals")
             if (searchQuery) updateMap(searchQuery, "hospitals")
@@ -119,37 +136,42 @@ const ResourceLocator = () => {
         >
           Hospitals
         </button>
-        
-      </div>
+        <button
+          className={`filter-toggle ${selectedType === "police stations" ? "active" : ""}`}
+          onClick={() => {
+            setSelectedType("police stations")
+            if (searchQuery) updateMap(searchQuery, "police stations")
+          }}
+        >
+          Police Stations
+        </button>
+      </section>
 
-      <div className="map-container">
+      <section className="map-section">
+        {loading && (
+          <div className="map-loading-overlay">
+            <div className="spinner"></div>
+            <p>Loading map and searching for {selectedType}...</p>
+          </div>
+        )}
         <iframe
           ref={mapRef}
+          title="Resource Map"
           width="100%"
-          height="450"
+          height="500"
           style={{ border: 0 }}
+          allowFullScreen=""
           loading="lazy"
-          allowFullScreen
-          src="https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=shelters"
+          referrerPolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps/embed/v1/search?key=AIzaSyBFw0Qbyq9zTFTd-tUY6dZWTgaQzuU17R8&q=shelters" // Initial map
         ></iframe>
-      </div>
+      </section>
 
-      {loading && (
-        <div className="loading-overlay">
-          <div className="loading-spinner"></div>
-          <p>Searching for resources...</p>
-        </div>
-      )}
-
-      <div className="footer">
-        <p>
-          If you're in immediate danger, please call 911 or the National Domestic Violence Hotline at 1195.
-        </p>
-        <p>This tool is confidential and does not store your location information.</p>
-      </div>
+      <footer className="resource-footer">
+        <p>© 2025 SafeSpace. All rights reserved.</p>
+      </footer>
     </div>
   )
 }
 
-export default ResourceLocator
-
+export default ResourceLocator;

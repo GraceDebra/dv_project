@@ -1,388 +1,368 @@
-/* Base styles */
+/* Base styles - Maintained from previous correct version */
 :root {
-  --primary-color: #5c6bc0;
-  --primary-light: #8e99f3;
-  --primary-dark: #26418f;
-  --secondary-color: #26a69a;
-  --text-color: #333;
-  --light-text: #666;
-  --background: #f8f9fa;
-  --card-background: #fff;
-  --border-color: #e0e0e0;
-  --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  --shelter-color: #4caf50;
-  --hospital-color: #2196f3;
+  --primary-color: #4a90e2; /* A fresh blue */
+  --secondary-color: #7bdcb5; /* A soft teal */
+  --accent-color: #f5a623; /* A warm orange for highlights */
+  --text-dark: #333d47; /* Dark charcoal */
+  --text-light: #6a737d; /* Muted grey */
+  --background-light: #f9fbfd; /* Very light blue-grey background */
+  --card-background: #ffffff; /* Pure white cards */
+  --border-color: #e6e9ed; /* Light, subtle border */
+  --shadow-light: rgba(0, 0, 0, 0.08);
+  --success-color: #4caf50; /* Standard green */
+  --info-color: #2196f3; /* Standard blue */
+  --danger-color: #f44336; /* Standard red */
 }
 
-* {
-  box-sizing: border-box;
+body {
+  font-family: 'Inter', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.6;
+  color: var(--text-dark);
+  background-color: var(--background-light);
   margin: 0;
   padding: 0;
 }
 
-body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  line-height: 1.6;
-  color: var(--text-color);
-  background-color: var(--background);
-}
-
-.resource-locator {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  position: relative;
-}
-
-/* Safety exit button */
-.safety-exit {
-  position: fixed;
+.resource-locator-container {
+  max-width: 1000px;
+  margin: 25px auto;
+  padding: 30px;
+  background-color: var(--background-light);
+  border-radius: 16px;
+  box-shadow: 0 8px 30px var(--shadow-light);
   display: flex;
-  gap: 10px; /* Space between buttons */
-  align-items: center;   
-  top: 10px;
-  right: 10px;
-  z-index: 1000;
+  flex-direction: column;
+  gap: 30px;
 }
 
-.exit-button {
+.header-actions {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  gap: 5px;
-  background-color: #f44336;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s;
-}
-
-.exit-button:hover {
-  background-color: #31b0d5;
-}
-.dashboard-button {
-  color: white;
-  background-color: #f44336;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.dashboard-button:hover {
-  background-color: #31b0d5;
-}
-
-/* Header styles */
-.header {
-  display: flex;
-  flex-direction: column; /* Stack elements vertically */
-  align-items: flex-start; /* Align text to the left */
-}
-
-
-.header h1 {
-  color: black;
-  margin-bottom: 10px;
-  font-size: 2.2rem;
-}
-
-.header p {
-  color: var(--light-text);
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-  margin-right: 1px;
-  color: black;
-}
-
-/* Search container */
-.search-container {
-  background-color: var(--card-background);
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: var(--shadow);
   margin-bottom: 20px;
 }
 
-.search-container form {
+.back-to-dashboard-button,
+.quick-exit-button {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 15px;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 0.95rem;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-.search-input-container {
+.back-to-dashboard-button:hover {
+  background-color: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.quick-exit-button {
+  background-color: var(--danger-color);
+  color: white;
+  border: none;
+}
+
+.quick-exit-button:hover {
+  background-color: #d32f2f;
+  transform: translateY(-2px);
+}
+
+.resource-header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.resource-header h1 {
+  color: var(--primary-color);
+  font-size: 3rem;
+  margin-bottom: 15px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.resource-header p {
+  color: var(--text-light);
+  font-size: 1.15rem;
+  max-width: 650px;
+  margin: 0 auto;
+  line-height: 1.7;
+}
+
+.search-section {
+  background-color: var(--card-background);
+  border-radius: 12px;
+  padding: 30px;
+  box-shadow: 0 4px 15px var(--shadow-light);
+}
+
+.search-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.input-wrapper {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
 }
 
-.search-icon {
-  position: absolute;
-  right: 10px;
-  color: var(--light-text);
-  pointer-events: none;
-}
-
-.search-input {
+.location-input {
   width: 100%;
+  padding: 14px 18px;
+  padding-right: 80px; /* Adjusted padding to accommodate two icons */
   border: 1px solid var(--border-color);
-  border-radius: 4px;
-  font-size: 1rem;
-  transition: border-color 0.2s;
-  padding-left: 36px;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  color: var(--text-dark);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-
-.search-input:focus {
+.location-input:focus {
   outline: none;
   border-color: var(--primary-color);
+  box-shadow: 0 0 0 4px rgba(74, 144, 226, 0.2);
 }
 
-.search-buttons {
-  display: flex;
-  gap: 10px;
-}
-
-.search-button,
-.location-button {
-  padding: 12px 20px;
+.clear-search-button {
+  position: absolute;
+  right: 50px; /* Positioned before the search icon */
+  background: none;
   border: none;
-  border-radius: 4px;
-  font-size: 1rem;
+  color: var(--text-light);
   cursor: pointer;
-  transition: background-color 0.2s;
+  padding: 5px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+  z-index: 2;
+}
+
+.clear-search-button:hover {
+  background-color: var(--border-color);
+}
+
+.search-icon-button {
+  position: absolute;
+  right: 15px; /* Positioned at the very end */
+  background: none;
+  border: none;
+  color: var(--primary-color);
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 50%;
+  transition: background-color 0.2s ease;
+  z-index: 2;
+}
+
+.search-icon-button:hover {
+  background-color: var(--border-color);
+}
+
+/* New container for centering the "Use Current Location" button */
+.use-location-button-container {
+  display: flex;
+  justify-content: center; /* Center the button horizontally */
+  margin-top: 10px; /* Add a little space above it */
+}
+
+.button {
+  padding: 14px 25px;
+  border: none;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
 }
 
-.search-button {
+.secondary-button {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 2px solid var(--primary-color);
+  flex: 0 1 auto; /* Allow button to shrink and grow based on content */
+  /* Remove width: 100% or flex-grow: 1 to prevent it from stretching */
+}
+
+.secondary-button:hover {
   background-color: var(--primary-color);
   color: white;
-  flex: 1;
+  transform: translateY(-2px);
 }
 
-.search-button:hover {
-  background-color: var(--primary-dark);
-}
-
-.location-button {
-  background-color: var(--card-background);
-  color: var(--primary-color);
-  border: 1px solid var(--primary-color);
-  flex: 1;
-}
-
-.location-button:hover {
-  background-color: rgba(92, 107, 192, 0.1);
-}
-
-/* Filter container */
-.filter-container {
+.filter-section {
   display: flex;
-  gap: 10px;
-  margin-bottom: 20px;
+  justify-content: center;
+  gap: 20px;
   flex-wrap: wrap;
 }
 
-.filter-button {
-  padding: 8px 16px;
+.filter-toggle {
+  padding: 12px 30px;
+  border: 2px solid var(--border-color);
+  border-radius: 30px;
   background-color: var(--card-background);
-  border: 1px solid var(--border-color);
-  border-radius: 20px;
+  color: var(--text-light);
+  font-size: 1.05rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s;
-  font-size: 0.9rem;
-  flex: 1;
+  transition: all 0.3s ease;
+  min-width: 160px;
   text-align: center;
-  max-width: 150px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
 }
 
-.filter-button:hover {
-  background-color: rgba(92, 107, 192, 0.1);
+.filter-toggle:hover {
+  border-color: var(--secondary-color);
+  color: var(--secondary-color);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
 }
 
-.filter-button.active {
+.filter-toggle.active {
   background-color: var(--primary-color);
   color: white;
   border-color: var(--primary-color);
+  box-shadow: 0 6px 15px rgba(74, 144, 226, 0.4);
+  transform: translateY(-3px);
 }
 
-/* Map container */
-.map-container {
-  background-color: var(--card-background);
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: var(--shadow);
-  height: 500px;
-  width: 100%;
+.map-section {
   position: relative;
+  background-color: var(--card-background);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 15px var(--shadow-light);
+  height: 550px;
 }
 
-.loading-map {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--light-text);
-  font-size: 1.1rem;
-}
-
-/* Loading overlay */
-.loading-overlay {
-  position: fixed;
+.map-loading-overlay {
+  position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(255, 255, 255, 0.8);
+  right: 0;
+  bottom: 0;
+  background-color: rgba(255, 255, 255, 0.95);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
+  z-index: 10;
+  color: var(--text-light);
+  font-size: 1.2rem;
+  border-radius: 12px;
 }
 
-.loading-spinner {
-  width: 50px;
-  height: 50px;
+.spinner {
   border: 5px solid var(--border-color);
   border-top: 5px solid var(--primary-color);
   border-radius: 50%;
+  width: 50px;
+  height: 50px;
   animation: spin 1s linear infinite;
-  margin-bottom: 15px;
+  margin-bottom: 20px;
 }
 
 @keyframes spin {
-  0% {
-    transform: rotate(0deg);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
-/* Google Maps Info Window Styling */
-.info-window {
-  padding: 5px;
-  max-width: 250px;
-}
-
-.info-window h3 {
-  margin: 0 0 5px 0;
-  color: var(--primary-color);
-  font-size: 16px;
-}
-
-.info-window p {
-  margin: 5px 0;
-  font-size: 14px;
-}
-
-.info-window .open {
-  color: var(--shelter-color);
-  font-weight: bold;
-}
-
-.info-window a {
-  display: inline-block;
-  margin-top: 8px;
-  color: var(--primary-color);
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.info-window a:hover {
-  text-decoration: underline;
-}
-
-/* Footer */
-.footer {
-  margin-top: 30px;
+.resource-footer {
   text-align: center;
-  padding: 20px;
+  padding: 25px;
   border-top: 1px solid var(--border-color);
-  color: var(--light-text);
+  color: var(--text-light);
+  font-size: 0.9rem;
+  margin-top: 30px;
 }
 
-.footer p {
-  margin-bottom: 10px;
-}
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .resource-locator-container {
+    margin: 15px;
+    padding: 20px;
+    gap: 20px;
+  }
 
-/* Responsive adjustments */
-@media (max-width: 767px) {
-  .search-buttons {
+  .header-actions {
     flex-direction: column;
+    gap: 15px;
+    align-items: stretch;
   }
 
-  .header h1 {
-    font-size: 1.8rem;
+  .back-to-dashboard-button,
+  .quick-exit-button {
+    width: 100%;
+    justify-content: center;
   }
 
-  .map-container {
+  .resource-header h1 {
+    font-size: 2.2rem;
+  }
+
+  .resource-header p {
+    font-size: 1rem;
+  }
+
+  .search-buttons {
+    flex-direction: column; /* This now only applies to the Use Current Location button */
+  }
+
+  .button {
+    width: 100%; /* Ensure the Use Current Location button stretches */
+  }
+
+  .filter-section {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .filter-toggle {
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .map-section {
     height: 400px;
-  }
-
-  .filter-button {
-    max-width: none;
   }
 }
 
 @media (max-width: 480px) {
-  .filter-container {
-    justify-content: center;
+  .resource-locator-container {
+    padding: 15px;
   }
 
-  .header h1 {
-    font-size: 1.5rem;
+  .resource-header h1 {
+    font-size: 1.8rem;
   }
 
-  .map-container {
-    height: 350px;
+  .location-input {
+    font-size: 0.95rem;
+    padding-right: 70px;
+  }
+
+  .clear-search-button {
+    right: 40px;
+  }
+
+  .search-icon-button {
+    right: 10px;
+  }
+
+  .map-section {
+    height: 300px;
   }
 }
-
-/* Add these new styles */
-.info-container {
-  background-color: var(--card-background);
-  border-radius: 8px;
-  padding: 20px;
-  box-shadow: var(--shadow);
-  margin-top: 20px;
-}
-
-.info-container h2 {
-  color: var(--primary-color);
-  margin-bottom: 10px;
-}
-
-.info-container ol {
-  padding-left: 20px;
-  margin-bottom: 15px;
-}
-
-.info-container li {
-  margin-bottom: 5px;
-}
-
-.info-container p {
-  color: var(--light-text);
-}
-
-/* Update search button style */
-.search-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-}
-

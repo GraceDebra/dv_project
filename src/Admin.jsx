@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import './Admin.css';
+import './Admin.css'; // Make sure this CSS file is linked correctly
 
 // Main Admin component
 const Admin = () => {
@@ -8,54 +8,53 @@ const Admin = () => {
   const [quizQuestions, setQuizQuestions] = useState([]);
   const [testimonials, setTestimonials] = useState([]);
   const [reports, setReports] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [users, setUsers] = useState([]); // This is crucial for looking up report submitters
   const [userSessions, setUserSessions] = useState([]);
-  
+
   // UI state
-  const [activeSection, setActiveSection] = useState('overview');
   const [isLoading, setIsLoading] = useState(false);
   const [notification, setNotification] = useState({ show: false, message: '', type: 'success' });
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [typeFilter, setTypeFilter] = useState('all');
   const [connectionStatus, setConnectionStatus] = useState({ connected: false, message: 'Checking connection...' });
-  
+  const [activeSection, setActiveSection] = useState('overview');
+
   // Modal state
   const [showModal, setShowModal] = useState(false);
   const [modalType, setModalType] = useState('');
   const [modalTitle, setModalTitle] = useState('');
   const [modalItemId, setModalItemId] = useState(null);
-  const [isViewOnly, setIsViewOnly] = useState(false);
   const [modalData, setModalData] = useState(null);
-  
+
   // API base URL
   const API_BASE_URL = "http://localhost:8081";
-  
+
   // Fetch all data on component mount
   useEffect(() => {
     checkServerConnection();
     fetchAllData();
   }, []);
-  
+
   // Check server connection
   const checkServerConnection = async () => {
     try {
       setIsLoading(true);
-      
+
       const response = await fetch(`${API_BASE_URL}/test-db`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json'
         }
       });
-      
+
       if (!response.ok) {
         throw new Error(`Server responded with status: ${response.status}`);
       }
-      
+
       const data = await response.json();
       console.log('Server connection successful:', data);
-      
+
       setConnectionStatus({ connected: true, message: 'Connected to server' });
       setIsLoading(false);
     } catch (error) {
@@ -65,36 +64,37 @@ const Admin = () => {
       showNotification('Server connection error: ' + error.message, 'error');
     }
   };
-  
+
   // Fetch all data from the server
   const fetchAllData = async () => {
     try {
       setIsLoading(true);
-      
+      console.log('Fetching all data for refresh...'); // Log to confirm button click
+
       // First check if we can connect to the server
       if (!connectionStatus.connected) {
         await checkServerConnection();
       }
-      
+
+      // Fetch users first, as reports depend on user data for display
+      await fetchUsers(); // This will populate the 'users' state
+
       // Fetch resources
       const resourcesData = await fetchData('/services/resources');
-      setResources(resourcesData);
-      
+      setResources(resourcesData); // Ensure this is populating correctly
+
       // Fetch quiz questions
       const quizData = await fetchData('/services/quiz-questions');
       setQuizQuestions(quizData);
-      
+
       // Fetch testimonials
       const testimonialsData = await fetchData('/services/testimonials');
       setTestimonials(testimonialsData);
-      
+
       // Fetch reports
       const reportsData = await fetchData('/services/reports');
       setReports(reportsData);
-      
-      // Fetch users
-      await fetchUsers();
-      
+
       setIsLoading(false);
       showNotification('All data refreshed successfully');
     } catch (error) {
@@ -103,14 +103,14 @@ const Admin = () => {
       showNotification('Error fetching data: ' + error.message, 'error');
     }
   };
-  
+
   // Fetch data for a specific section
   const fetchSectionData = async (section) => {
     try {
       setIsLoading(true);
-      
+
       let endpoint = '';
-      
+
       switch(section) {
         case 'resources':
           endpoint = '/services/resources';
@@ -139,7 +139,7 @@ const Admin = () => {
           setIsLoading(false);
           return;
       }
-      
+
       setIsLoading(false);
     } catch (error) {
       console.error(`Error fetching ${section} data:`, error);
@@ -147,12 +147,12 @@ const Admin = () => {
       showNotification(`Error fetching ${section} data. Please try again.`, 'error');
     }
   };
-  
-  // Fetch users with improved error handling
+
+  // Fetch users with improved error handling and debugging
   const fetchUsers = async () => {
     try {
       console.log('Fetching users...');
-      
+
       const response = await fetch(`${API_BASE_URL}/services/users`, {
         method: 'GET',
         headers: {
@@ -161,37 +161,39 @@ const Admin = () => {
           'Authorization': localStorage.getItem('authToken') ? `Bearer ${localStorage.getItem('authToken')}` : ''
         }
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`API error (${response.status}):`, errorText);
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      console.log('Users data received:', data);
-      
-      // Handle different response formats
+      console.log('Users data received (raw):', data); // Log raw data
+
+      let processedUsers = [];
       if (Array.isArray(data)) {
-        setUsers(data);
+        processedUsers = data;
       } else if (data.users && Array.isArray(data.users)) {
-        setUsers(data.users);
+        processedUsers = data.users;
       } else {
         console.warn('Unexpected users data format:', data);
-        setUsers([]);
       }
+      setUsers(processedUsers);
+      console.log('Users state updated with:', processedUsers); // Log processed users
+
     } catch (error) {
       console.error('Error fetching users:', error);
       setUsers([]);
       showNotification('Error fetching users: ' + error.message, 'error');
     }
   };
-  
+
   // Fetch user sessions
   const fetchUserSessions = async (userId) => {
     try {
       setIsLoading(true);
-      
+
       const response = await fetch(`${API_BASE_URL}/services/users/${userId}/sessions`, {
         method: 'GET',
         headers: {
@@ -200,16 +202,16 @@ const Admin = () => {
           'Authorization': localStorage.getItem('authToken') ? `Bearer ${localStorage.getItem('authToken')}` : ''
         }
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`API error (${response.status}):`, errorText);
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const data = await response.json();
       console.log('User sessions received:', data);
-      
+
       setUserSessions(Array.isArray(data) ? data : []);
       setIsLoading(false);
     } catch (error) {
@@ -219,7 +221,7 @@ const Admin = () => {
       showNotification('Error fetching user sessions: ' + error.message, 'error');
     }
   };
-  
+
   // Generic function to fetch data from the API
   const fetchData = async (endpoint) => {
     try {
@@ -231,77 +233,142 @@ const Admin = () => {
           'Authorization': token ? `Bearer ${token}` : ''
         }
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`API error (${response.status}):`, errorText);
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      return data;
+      // Ensure the data is always an array, even if API returns a single object or null
+      return Array.isArray(data) ? data : (data ? [data] : []);
     } catch (error) {
       console.error(`Error fetching data from ${endpoint}:`, error);
-      return [];
+      return []; // Return empty array on error
     }
   };
-  
+
   // Show notification
   const showNotification = (message, type = 'success') => {
+    console.log('Attempting to show notification:', message, type); // Added for debugging
     setNotification({ show: true, message, type });
-    
+
     // Auto-hide after 3 seconds
     setTimeout(() => {
+      console.log('Attempting to hide notification.'); // Added for debugging
       setNotification(prev => ({ ...prev, show: false }));
     }, 3000);
   };
-  
+
   // Switch between dashboard sections
   const switchSection = (section) => {
     setActiveSection(section);
-    
+
     // Refresh data for the current section
     if (section !== 'overview') {
       fetchSectionData(section);
     }
   };
-  
+
   // Show modal for viewing user sessions
   const showUserSessionsModal = (userId) => {
     setModalType('userSessions');
     setModalTitle('User Sessions');
     setModalItemId(userId);
-    setIsViewOnly(true);
-    fetchUserSessions(userId);
     setShowModal(true);
+    fetchUserSessions(userId);
   };
-  
+
   // Show modal for editing a user
   const showEditUserModal = (userId) => {
     setModalType('editUser');
     setModalTitle('Edit User');
     setModalItemId(userId);
-    setIsViewOnly(false);
-    
-    // Find the user data
     const user = users.find(u => u.id === userId);
     setModalData(user);
-    
     setShowModal(true);
   };
-  
+
+  // Show modal for viewing a report
+  const showViewReportModal = (reportId) => {
+    setModalType('viewReport');
+    setModalTitle('View Report Details');
+    const report = reports.find(r => r.id === reportId);
+    setModalData(report);
+    setShowModal(true);
+  };
+
+  // Show modal for updating report status
+  const showUpdateReportStatusModal = (reportId) => {
+    setModalType('updateReportStatus');
+    setModalTitle('Update Report Status');
+    setModalItemId(reportId);
+    const report = reports.find(r => r.id === reportId);
+    // Ensure modalData holds a copy so current status is reflected in dropdown
+    setModalData({ ...report });
+    setShowModal(true);
+  };
+
+  // Show modal for editing a quiz question
+  const showEditQuizModal = (questionId) => {
+    setModalType('editQuiz');
+    setModalTitle('Edit Quiz Question');
+    setModalItemId(questionId);
+    const question = quizQuestions.find(q => q.id === questionId);
+    // Deep copy modalData to allow direct modification in modal without affecting state
+    setModalData({
+      id: question.id,
+      question: question.question,
+      options: question.options,
+      correct_answer: question.correct_answer,
+    });
+    setShowModal(true);
+  };
+
+  // Show modal for viewing a quiz question
+  const showViewQuizModal = (questionId) => {
+    setModalType('viewQuiz');
+    setModalTitle('View Quiz Question Details');
+    const question = quizQuestions.find(q => q.id === questionId);
+    setModalData(question);
+    setShowModal(true);
+  };
+
+  // Show modal for viewing a testimonial
+  const showViewTestimonialModal = (testimonialId) => {
+    setModalType('viewTestimonial');
+    setModalTitle('View Testimonial Details');
+    const testimonial = testimonials.find(t => t.id === testimonialId);
+    setModalData(testimonial);
+    setShowModal(true);
+  };
+
+  // Show modal for viewing a resource
+  const showViewResourceModal = (resourceId) => {
+    console.log('Attempting to view resource with ID:', resourceId); // DEBUG LOG
+    setModalType('viewResource'); // Set modal type to 'viewResource'
+    setModalTitle('View Resource Details');
+    // CRITICAL FIX: Ensure ID comparison is type-agnostic by converting to string
+    const resource = resources.find(r => String(r.id) === String(resourceId));
+    console.log('Found resource:', resource); // DEBUG LOG: Check if resource is found
+    setModalData(resource); // Set the resource data
+    setShowModal(true);
+  };
+
+
   // Confirm deletion of a session
   const confirmDeleteSession = (sessionId) => {
     if (window.confirm(`Are you sure you want to terminate this session? This action cannot be undone.`)) {
       deleteSession(sessionId);
     }
   };
-  
+
   // Delete a session
   const deleteSession = async (sessionId) => {
     try {
       setIsLoading(true);
-      
+
       const token = localStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/services/sessions/${sessionId}`, {
         method: 'DELETE',
@@ -310,16 +377,16 @@ const Admin = () => {
           'Authorization': token ? `Bearer ${token}` : ''
         }
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`API error (${response.status}):`, errorText);
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       // Refresh the sessions data
       fetchUserSessions(modalItemId);
-      
+
       setIsLoading(false);
       showNotification('Session terminated successfully');
     } catch (error) {
@@ -328,12 +395,12 @@ const Admin = () => {
       showNotification(`Error terminating session. Please try again.`, 'error');
     }
   };
-  
+
   // Update user status
   const updateUserStatus = async (userId, status) => {
     try {
       setIsLoading(true);
-      
+
       const token = localStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/services/users/${userId}/status`, {
         method: 'PUT',
@@ -343,16 +410,16 @@ const Admin = () => {
         },
         body: JSON.stringify({ status })
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`API error (${response.status}):`, errorText);
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       // Refresh the users data
       fetchUsers();
-      
+
       setIsLoading(false);
       showNotification(`User status updated to ${status}`);
     } catch (error) {
@@ -361,19 +428,92 @@ const Admin = () => {
       showNotification(`Error updating user status. Please try again.`, 'error');
     }
   };
-  
+
+  // Update report status
+  const updateReportStatus = async (reportId, status) => {
+    try {
+      setIsLoading(true);
+
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`${API_BASE_URL}/services/reports/${reportId}/status`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify({ status })
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`API error (${response.status}):`, errorText);
+        throw new Error(`API error: ${response.status} - ${errorText || 'Unknown error'}`);
+      }
+
+      // Refresh the reports data
+      await fetchSectionData('reports');
+
+      setIsLoading(false);
+      showNotification(`Report status updated to ${status}`);
+    } catch (error) {
+      console.error(`Error updating report status:`, error);
+      setIsLoading(false);
+      showNotification(`Error updating report status. Please try again.`, 'error');
+    }
+  };
+
+  // Update Quiz Question
+  const updateQuizQuestion = async () => {
+    try {
+      setIsLoading(true);
+      const token = localStorage.getItem('authToken');
+
+      // Ensure modalData is correct before sending
+      const dataToSend = {
+        question: modalData.question,
+        options: modalData.options,
+        correct_answer: modalData.correct_answer,
+      };
+      console.log('Sending update request for quiz question:', dataToSend);
+
+      const response = await fetch(`${API_BASE_URL}/services/quiz-questions/${modalItemId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        },
+        body: JSON.stringify(dataToSend)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`API error (${response.status}):`, errorText);
+        throw new Error(`Failed to update quiz question: ${response.status} - ${errorText || 'Unknown error'}`);
+      }
+
+      await fetchSectionData('quiz'); // Refresh quiz questions data
+      setShowModal(false); // Close the modal
+      setIsLoading(false);
+      showNotification('Quiz question updated successfully!');
+    } catch (error) {
+      console.error('Error updating quiz question:', error);
+      setIsLoading(false);
+      showNotification(`Error updating quiz question: ${error.message}`, 'error');
+    }
+  };
+
   // Delete a user
   const confirmDeleteUser = (userId) => {
     if (window.confirm(`Are you sure you want to delete this user? This action cannot be undone.`)) {
       deleteUser(userId);
     }
   };
-  
+
   // Delete a user
   const deleteUser = async (userId) => {
     try {
       setIsLoading(true);
-      
+
       const token = localStorage.getItem('authToken');
       const response = await fetch(`${API_BASE_URL}/services/users/${userId}`, {
         method: 'DELETE',
@@ -382,16 +522,16 @@ const Admin = () => {
           'Authorization': token ? `Bearer ${token}` : ''
         }
       });
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error(`API error (${response.status}):`, errorText);
         throw new Error(`API error: ${response.status}`);
       }
-      
+
       // Refresh the users data
       fetchUsers();
-      
+
       setIsLoading(false);
       showNotification('User deleted successfully');
     } catch (error) {
@@ -400,53 +540,113 @@ const Admin = () => {
       showNotification(`Error deleting user. Please try again.`, 'error');
     }
   };
-  
+
+  // Confirm deletion of a testimonial
+  const confirmDeleteTestimonial = (testimonialId) => {
+    if (window.confirm(`Are you sure you want to delete this testimonial? This action cannot be undone.`)) {
+      deleteTestimonial(testimonialId);
+    }
+  };
+
+  // Delete a testimonial
+  const deleteTestimonial = async (testimonialId) => {
+    try {
+      setIsLoading(true);
+
+      const token = localStorage.getItem('authToken');
+      const response = await fetch(`${API_BASE_URL}/services/testimonials/${testimonialId}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : ''
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`API error (${response.status}):`, errorText);
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      // Refresh the testimonials data
+      fetchSectionData('testimonials');
+
+      setIsLoading(false);
+      showNotification('Testimonial deleted successfully');
+    } catch (error) {
+      console.error(`Error deleting testimonial:`, error);
+      setIsLoading(false);
+      showNotification(`Error deleting testimonial. Please try again.`, 'error');
+    }
+  };
+
   // Close the modal
   const closeModal = () => {
     setShowModal(false);
     setModalData(null);
   };
-  
+
   // Helper function to format dates
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
-    
+
     const date = new Date(dateString);
-    
+
     if (isNaN(date.getTime())) {
       return 'Invalid Date';
     }
-    
-    return date.toLocaleString();
+
+    return date.toLocaleString(); // This will include both date and time
   };
-  
+
   // Helper function to truncate text
   const truncateText = (text, maxLength) => {
     if (!text) return '';
-    
+
     if (text.length <= maxLength) {
       return text;
     }
-    
+
     return text.substring(0, maxLength) + '...';
   };
-  
+
   // Helper function to capitalize first letter
   const capitalizeFirstLetter = (string) => {
     if (!string) return '';
     return string.charAt(0).toUpperCase() + string.slice(1);
   };
-  
+
   // Filter reports based on status and type filters
   const filteredReports = reports.filter(report => {
     const statusMatch = statusFilter === 'all' || (report.status || 'pending') === statusFilter;
     const typeMatch = typeFilter === 'all' || (report.incident_type || '').toLowerCase() === typeFilter;
     return statusMatch && typeMatch;
   });
-  
+
   // Get unique report types for the filter dropdown
   const reportTypes = [...new Set(reports.map(report => report.incident_type).filter(Boolean))];
-  
+
+  // Function to get user name from user ID, handling anonymous reports and debugging
+  const getUserNameById = (userId) => {
+    if (userId === null || userId === undefined || userId === '' || userId === 0 || String(userId).toLowerCase() === 'anonymous') {
+      return 'Anonymous';
+    }
+
+    const numericUserId = Number(userId);
+
+    if (isNaN(numericUserId) || numericUserId <= 0) {
+      return 'Invalid User ID';
+    }
+
+    const user = users.find(u => u.id === numericUserId);
+
+    if (user) {
+      return user.full_name || user.email;
+    } else {
+      return `User ID: ${numericUserId} (Not Found)`;
+    }
+  };
+
   // Calculate data for overview charts
   const totalItems = resources.length + quizQuestions.length + testimonials.length + reports.length + users.length;
   const resourcesPercent = totalItems > 0 ? (resources.length / totalItems) * 100 : 0;
@@ -454,7 +654,7 @@ const Admin = () => {
   const testimonialsPercent = totalItems > 0 ? (testimonials.length / totalItems) * 100 : 0;
   const reportsPercent = totalItems > 0 ? (reports.length / totalItems) * 100 : 0;
   const usersPercent = totalItems > 0 ? (users.length / totalItems) * 100 : 0;
-  
+
   // Get recent activity for the activity log
   const allItems = [
     ...resources.map(r => ({ type: 'Resource', name: r.title, date: new Date(r.created_at) })),
@@ -463,22 +663,21 @@ const Admin = () => {
     ...reports.map(r => ({ type: 'Report', name: r.incident_type, date: new Date(r.created_at || r.incident_date) })),
     ...users.map(u => ({ type: 'User', name: u.full_name || u.email, date: new Date(u.created_at || u.registration_time) }))
   ];
-  
+
   // Sort by date (newest first) and take the 10 most recent
   const recentActivity = allItems
-    .filter(item => !isNaN(item.date.getTime())) // Filter out invalid dates
+    .filter(item => !isNaN(item.date.getTime()))
     .sort((a, b) => b.date - a.date)
     .slice(0, 10);
-  
+
   // Handle logout
   const handleLogout = () => {
     if (window.confirm('Are you sure you want to logout?')) {
-      // Clear any auth tokens and redirect to login
       localStorage.removeItem('authToken');
       window.location.href = '/login.html';
     }
   };
-  
+
   return (
     <div id="admin-dashboard">
       <header className="admin-header">
@@ -490,64 +689,64 @@ const Admin = () => {
           <button id="logout-btn" onClick={handleLogout}>Logout</button>
         </div>
       </header>
-      
+
       <div className="dashboard-container">
         <nav className="sidebar">
           <ul>
-            <li 
-              className={activeSection === 'overview' ? 'active' : ''} 
+            <li
+              className={activeSection === 'overview' ? 'active' : ''}
               onClick={() => switchSection('overview')}
             >
               Overview
             </li>
-            <li 
-              className={activeSection === 'users' ? 'active' : ''} 
+            <li
+              className={activeSection === 'users' ? 'active' : ''}
               onClick={() => switchSection('users')}
             >
               Users
             </li>
-            <li 
-              className={activeSection === 'resources' ? 'active' : ''} 
+            <li
+              className={activeSection === 'resources' ? 'active' : ''}
               onClick={() => switchSection('resources')}
             >
               Resources
             </li>
-            <li 
-              className={activeSection === 'quiz' ? 'active' : ''} 
+            <li
+              className={activeSection === 'quiz' ? 'active' : ''}
               onClick={() => switchSection('quiz')}
             >
               Quiz Questions
             </li>
-            <li 
-              className={activeSection === 'testimonials' ? 'active' : ''} 
+            <li
+              className={activeSection === 'testimonials' ? 'active' : ''}
               onClick={() => switchSection('testimonials')}
             >
               Testimonials
             </li>
-            <li 
-              className={activeSection === 'reports' ? 'active' : ''} 
+            <li
+              className={activeSection === 'reports' ? 'active' : ''}
               onClick={() => switchSection('reports')}
             >
               Reports
             </li>
           </ul>
         </nav>
-        
+
         <main className="content">
           <div className="section-header">
             <h2 id="current-section">{capitalizeFirstLetter(activeSection)}</h2>
             <div className="actions">
-              <input 
-                type="text" 
-                id="search-input" 
-                placeholder="Search..." 
+              <input
+                type="text"
+                id="search-input"
+                placeholder="Search..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
               <button id="refresh-btn" onClick={fetchAllData}>Refresh Data</button>
             </div>
           </div>
-          
+
           <div className="dashboard-stats">
             <div className="stat-card" id="users-count">
               <h3>Users</h3>
@@ -570,7 +769,7 @@ const Admin = () => {
               <p className="stat-number">{reports.length}</p>
             </div>
           </div>
-          
+
           <div id="data-container">
             {/* Overview Section */}
             {activeSection === 'overview' && (
@@ -610,7 +809,7 @@ const Admin = () => {
                 </div>
               </div>
             )}
-            
+
             {/* Users Section */}
             {activeSection === 'users' && (
               <div id="users-section" className="data-section active">
@@ -635,8 +834,8 @@ const Admin = () => {
                         </tr>
                       ) : (
                         users
-                          .filter(user => 
-                            searchTerm === '' || 
+                          .filter(user =>
+                            searchTerm === '' ||
                             JSON.stringify(user).toLowerCase().includes(searchTerm.toLowerCase())
                           )
                           .map(user => (
@@ -652,26 +851,26 @@ const Admin = () => {
                               <td>{formatDate(user.created_at || user.registration_time)}</td>
                               <td>{formatDate(user.last_login)}</td>
                               <td className="actions">
-                                <button 
-                                  className="sessions-btn" 
+                                <button
+                                  className="sessions-btn"
                                   onClick={() => showUserSessionsModal(user.id)}
                                 >
                                   Sessions
                                 </button>
-                                <button 
-                                  className="edit-btn" 
+                                <button
+                                  className="edit-btn"
                                   onClick={() => showEditUserModal(user.id)}
                                 >
                                   Edit
                                 </button>
-                                <button 
-                                  className="status-btn" 
+                                <button
+                                  className="status-btn"
                                   onClick={() => updateUserStatus(user.id, user.status === 'active' ? 'inactive' : 'active')}
                                 >
                                   {user.status === 'active' ? 'Deactivate' : 'Activate'}
                                 </button>
-                                <button 
-                                  className="delete-btn" 
+                                <button
+                                  className="delete-btn"
                                   onClick={() => confirmDeleteUser(user.id)}
                                 >
                                   Delete
@@ -685,7 +884,7 @@ const Admin = () => {
                 </div>
               </div>
             )}
-            
+
             {/* Resources Section */}
             {activeSection === 'resources' && (
               <div id="resources-section" className="data-section active">
@@ -708,8 +907,8 @@ const Admin = () => {
                         </tr>
                       ) : (
                         resources
-                          .filter(resource => 
-                            searchTerm === '' || 
+                          .filter(resource =>
+                            searchTerm === '' ||
                             JSON.stringify(resource).toLowerCase().includes(searchTerm.toLowerCase())
                           )
                           .map(resource => (
@@ -719,7 +918,7 @@ const Admin = () => {
                               <td>{resource.type || 'N/A'}</td>
                               <td>{formatDate(resource.created_at)}</td>
                               <td className="actions">
-                                <button className="view-btn">View</button>
+                                <button className="view-btn" onClick={() => showViewResourceModal(resource.id)}>View</button>
                                 <button className="edit-btn">Edit</button>
                                 <button className="delete-btn">Delete</button>
                               </td>
@@ -731,7 +930,7 @@ const Admin = () => {
                 </div>
               </div>
             )}
-            
+
             {/* Quiz Questions Section */}
             {activeSection === 'quiz' && (
               <div id="quiz-section" className="data-section active">
@@ -742,31 +941,29 @@ const Admin = () => {
                       <tr>
                         <th>ID</th>
                         <th>Question</th>
-                        <th>Category</th>
-                        <th>Difficulty</th>
+                        <th>Correct Answer</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {quizQuestions.length === 0 ? (
                         <tr>
-                          <td colSpan="5">No quiz questions found</td>
+                          <td colSpan="4">No quiz questions found</td>
                         </tr>
                       ) : (
                         quizQuestions
-                          .filter(question => 
-                            searchTerm === '' || 
+                          .filter(question =>
+                            searchTerm === '' ||
                             JSON.stringify(question).toLowerCase().includes(searchTerm.toLowerCase())
                           )
                           .map(question => (
                             <tr key={question.id}>
                               <td>{question.id}</td>
-                              <td>{truncateText(question.question, 50) || 'N/A'}</td>
-                              <td>{question.category || 'N/A'}</td>
-                              <td>{question.difficulty || 'N/A'}</td>
+                              <td>{truncateText(question.question, 50)}</td>
+                              <td>{question.correct_answer || 'N/A'}</td>
                               <td className="actions">
-                                <button className="view-btn">View</button>
-                                <button className="edit-btn">Edit</button>
+                                <button className="view-btn" onClick={() => showViewQuizModal(question.id)}>View</button>
+                                <button className="edit-btn" onClick={() => showEditQuizModal(question.id)}>Edit</button>
                                 <button className="delete-btn">Delete</button>
                               </td>
                             </tr>
@@ -777,7 +974,7 @@ const Admin = () => {
                 </div>
               </div>
             )}
-            
+
             {/* Testimonials Section */}
             {activeSection === 'testimonials' && (
               <div id="testimonials-section" className="data-section active">
@@ -789,6 +986,7 @@ const Admin = () => {
                         <th>ID</th>
                         <th>Author</th>
                         <th>Content</th>
+                        <th>Rating</th>
                         <th>Created</th>
                         <th>Actions</th>
                       </tr>
@@ -796,24 +994,24 @@ const Admin = () => {
                     <tbody>
                       {testimonials.length === 0 ? (
                         <tr>
-                          <td colSpan="5">No testimonials found</td>
+                          <td colSpan="6">No testimonials found</td>
                         </tr>
                       ) : (
                         testimonials
-                          .filter(testimonial => 
-                            searchTerm === '' || 
+                          .filter(testimonial =>
+                            searchTerm === '' ||
                             JSON.stringify(testimonial).toLowerCase().includes(searchTerm.toLowerCase())
                           )
                           .map(testimonial => (
                             <tr key={testimonial.id}>
                               <td>{testimonial.id}</td>
-                              <td>{testimonial.author || 'N/A'}</td>
-                              <td>{truncateText(testimonial.content, 50) || 'N/A'}</td>
+                              <td>{testimonial.author || 'Anonymous'}</td>
+                              <td>{truncateText(testimonial.content, 50)}</td>
+                              <td>{testimonial.rating || 'N/A'}</td>
                               <td>{formatDate(testimonial.created_at)}</td>
                               <td className="actions">
-                                <button className="view-btn">View</button>
-                                <button className="edit-btn">Edit</button>
-                                <button className="delete-btn">Delete</button>
+                                <button className="view-btn" onClick={() => showViewTestimonialModal(testimonial.id)}>View</button>
+                                <button className="delete-btn" onClick={() => confirmDeleteTestimonial(testimonial.id)}>Delete</button>
                               </td>
                             </tr>
                           ))
@@ -823,29 +1021,22 @@ const Admin = () => {
                 </div>
               </div>
             )}
-            
+
             {/* Reports Section */}
             {activeSection === 'reports' && (
               <div id="reports-section" className="data-section active">
                 <h3>Reports Management</h3>
-                <div className="filter-controls">
-                  <select 
-                    value={statusFilter} 
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
+                <div className="filters">
+                  <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                     <option value="all">All Statuses</option>
                     <option value="pending">Pending</option>
-                    <option value="in-progress">In Progress</option>
                     <option value="resolved">Resolved</option>
-                    <option value="closed">Closed</option>
+                    <option value="dismissed">Dismissed</option>
                   </select>
-                  <select 
-                    value={typeFilter} 
-                    onChange={(e) => setTypeFilter(e.target.value)}
-                  >
+                  <select value={typeFilter} onChange={(e) => setTypeFilter(e.target.value)}>
                     <option value="all">All Types</option>
-                    {reportTypes.map(type => (
-                      <option key={type} value={type.toLowerCase()}>{type}</option>
+                    {reportTypes.map((type) => (
+                      <option key={type} value={type.toLowerCase()}>{capitalizeFirstLetter(type)}</option>
                     ))}
                   </select>
                 </div>
@@ -854,39 +1045,40 @@ const Admin = () => {
                     <thead>
                       <tr>
                         <th>ID</th>
-                        <th>Type</th>
-                        <th>Reported By</th>
+                        <th>Submitter</th>
+                        <th>Incident Type</th>
+                        <th>Description</th>
                         <th>Status</th>
-                        <th>Date</th>
+                        <th>Submitted On</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
                       {filteredReports.length === 0 ? (
                         <tr>
-                          <td colSpan="6">No reports found</td>
+                          <td colSpan="7">No reports found matching criteria</td>
                         </tr>
                       ) : (
                         filteredReports
-                          .filter(report => 
-                            searchTerm === '' || 
-                            JSON.stringify(report).toLowerCase().includes(searchTerm.toLowerCase())
+                          .filter(report =>
+                            searchTerm === '' ||
+                            JSON.stringify(report).toLowerCase().includes(searchTerm.toLowerCase()) ||
+                            getUserNameById(report.user_id).toLowerCase().includes(searchTerm.toLowerCase())
                           )
                           .map(report => (
                             <tr key={report.id}>
                               <td>{report.id}</td>
+                              <td>{getUserNameById(report.user_id)}</td>
                               <td>{report.incident_type || 'N/A'}</td>
-                              <td>{report.reported_by || 'N/A'}</td>
+                              <td>{truncateText(report.description, 50)}</td>
                               <td>
                                 <span className={`status-badge ${report.status || 'pending'}`}>
-                                  {report.status || 'Pending'}
+                                  {capitalizeFirstLetter(report.status || 'pending')}
                                 </span>
                               </td>
-                              <td>{formatDate(report.incident_date || report.created_at)}</td>
                               <td className="actions">
-                                <button className="view-btn">View</button>
-                                <button className="edit-btn">Edit</button>
-                                <button className="status-btn">Update Status</button>
+                                <button className="view-btn" onClick={() => showViewReportModal(report.id)}>View</button>
+                                <button className="edit-btn" onClick={() => showUpdateReportStatusModal(report.id)}>Update Status</button>
                               </td>
                             </tr>
                           ))
@@ -896,147 +1088,243 @@ const Admin = () => {
                 </div>
               </div>
             )}
+
           </div>
         </main>
       </div>
-      
-      {/* Connection Status Indicator */}
-      <div className={`connection-status ${connectionStatus.connected ? 'connected' : 'disconnected'}`}>
-        {connectionStatus.message}
-        {!connectionStatus.connected && (
-          <button onClick={checkServerConnection} className="retry-btn">
-            Retry Connection
-          </button>
-        )}
-      </div>
-      
+
+      {/* Loading Overlay */}
+      {isLoading && (
+        <div id="loading-overlay">
+          <div className="spinner"></div>
+          <p>Loading...</p>
+        </div>
+      )}
+
+      {/* Notification */}
+      {notification.show && (
+        <div id="notification" className={`notification ${notification.type}`}>
+          {notification.message}
+        </div>
+      )}
+
       {/* Modal */}
       {showModal && (
-        <div id="modal" className="modal" style={{ display: 'block' }}>
+        <div className="modal-overlay">
           <div className="modal-content">
-            <span className="close-btn" onClick={closeModal}>&times;</span>
-            <h3 id="modal-title">{modalTitle}</h3>
-            <div id="modal-body">
-              {/* User Sessions Modal */}
+            <div className="modal-header">
+              <h2>{modalTitle}</h2>
+              <button className="close-button" onClick={closeModal}>&times;</button>
+            </div>
+            <div className="modal-body">
               {modalType === 'userSessions' && (
-                <div className="sessions-container">
-                  <h4>Sessions for User ID: {modalItemId}</h4>
-                  <div className="table-container">
-                    <table id="sessions-table">
+                <div>
+                  <h3>Sessions for User ID: {modalItemId}</h3>
+                  {userSessions.length === 0 ? (
+                    <p>No active sessions found for this user.</p>
+                  ) : (
+                    <table className="modal-table">
                       <thead>
                         <tr>
-                          <th>ID</th>
+                          <th>Session ID</th>
+                          <th>Login Time</th>
                           <th>IP Address</th>
-                          <th>User Agent</th>
-                          <th>Created</th>
-                          <th>Expires</th>
+                          <th>Device/Browser</th>
                           <th>Actions</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {userSessions.length === 0 ? (
-                          <tr>
-                            <td colSpan="6">No sessions found for this user</td>
+                        {userSessions.map(session => (
+                          <tr key={session.id}>
+                            <td>{session.id}</td>
+                            <td>{formatDate(session.login_time)}</td>
+                            <td>{session.ip_address || 'N/A'}</td>
+                            <td>{session.device_info || 'N/A'}</td>
+                            <td>
+                              <button
+                                className="delete-btn"
+                                onClick={() => confirmDeleteSession(session.id)}
+                              >
+                                Terminate
+                              </button>
+                            </td>
                           </tr>
-                        ) : (
-                          userSessions.map(session => (
-                            <tr key={session.id}>
-                              <td>{session.id}</td>
-                              <td>{session.ip_address || 'N/A'}</td>
-                              <td>{truncateText(session.user_agent || 'N/A', 30)}</td>
-                              <td>{formatDate(session.created_at)}</td>
-                              <td>{formatDate(session.expires_at)}</td>
-                              <td>
-                                <button 
-                                  className="delete-btn" 
-                                  onClick={() => confirmDeleteSession(session.id)}
-                                >
-                                  Terminate
-                                </button>
-                              </td>
-                            </tr>
-                          ))
-                        )}
+                        ))}
                       </tbody>
                     </table>
-                  </div>
-                  <div className="form-actions">
-                    <button type="button" className="cancel-btn" onClick={closeModal}>Close</button>
-                  </div>
+                  )}
                 </div>
               )}
-              
-              {/* Edit User Modal */}
+
               {modalType === 'editUser' && modalData && (
-                <div className="edit-user-container">
-                  <form className="edit-user-form">
-                    <div className="form-group">
-                      <label htmlFor="fullName">Full Name</label>
-                      <input 
-                        type="text" 
-                        id="fullName" 
-                        value={modalData.full_name || ''} 
-                        onChange={(e) => setModalData({...modalData, full_name: e.target.value})}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="email">Email</label>
-                      <input 
-                        type="email" 
-                        id="email" 
-                        value={modalData.email || ''} 
-                        onChange={(e) => setModalData({...modalData, email: e.target.value})}
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="status">Status</label>
-                      <select 
-                        id="status" 
-                        value={modalData.status || 'inactive'} 
-                        onChange={(e) => setModalData({...modalData, status: e.target.value})}
-                      >
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                    </div>
-                    <div className="form-actions">
-                      <button type="button" className="save-btn" onClick={() => updateUserStatus(modalData.id, modalData.status)}>
-                        Save Changes
-                      </button>
-                      <button type="button" className="cancel-btn" onClick={closeModal}>
-                        Cancel
-                      </button>
-                    </div>
-                  </form>
+                <form>
+                  <div className="form-group">
+                    <label>ID:</label>
+                    <input type="text" value={modalData.id} disabled />
+                  </div>
+                  <div className="form-group">
+                    <label>Full Name:</label>
+                    <input type="text" value={modalData.full_name || ''} onChange={(e) => setModalData({ ...modalData, full_name: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label>Email:</label>
+                    <input type="email" value={modalData.email || ''} onChange={(e) => setModalData({ ...modalData, email: e.target.value })} />
+                  </div>
+                  <div className="form-group">
+                    <label>Status:</label>
+                    <select value={modalData.status || 'inactive'} onChange={(e) => setModalData({ ...modalData, status: e.target.value })}>
+                      <option value="active">Active</option>
+                      <option value="inactive">Inactive</option>
+                      <option value="suspended">Suspended</option>
+                    </select>
+                  </div>
+                  <div className="form-group">
+                    <label>Created At:</label>
+                    <input type="text" value={formatDate(modalData.created_at || modalData.registration_time)} disabled />
+                  </div>
+                  <div className="form-group">
+                    <label>Last Login:</label>
+                    <input type="text" value={formatDate(modalData.last_login)} disabled />
+                  </div>
+                  <button type="button" onClick={() => {
+                    showNotification('User update feature not implemented yet.', 'info');
+                    closeModal();
+                  }}>Save Changes</button>
+                </form>
+              )}
+
+              {modalType === 'viewReport' && modalData && (
+                <div>
+                  <p><strong>Report ID:</strong> {modalData.id}</p>
+                  <p><strong>Submitted By:</strong> {getUserNameById(modalData.user_id)}</p>
+                  <p><strong>Incident Type:</strong> {modalData.incident_type || 'N/A'}</p>
+                  <p><strong>Description:</strong> {modalData.description}</p>
+                  <p><strong>Status:</strong> <span className={`status-badge ${modalData.status || 'pending'}`}>{capitalizeFirstLetter(modalData.status || 'pending')}</span></p>
+                  <p><strong>Location:</strong> {modalData.location || 'N/A'}</p>
+                  <p><strong>Incident Date:</strong> {formatDate(modalData.incident_date)}</p>
+                  <p><strong>Submitted On:</strong> {formatDate(modalData.created_at)}</p>
+                  <p><strong>Contact Info:</strong> {modalData.contact_info || 'N/A'}</p>
                 </div>
               )}
-              
-              {/* Other modal types */}
-              {modalType !== 'userSessions' && modalType !== 'editUser' && (
-                <div>
-                  <p>Modal content for {modalType} would go here</p>
-                  <div className="form-actions">
-                    <button type="button" className="cancel-btn" onClick={closeModal}>Close</button>
+
+              {modalType === 'updateReportStatus' && modalData && (
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  updateReportStatus(modalItemId, modalData.status);
+                  closeModal();
+                }}>
+                  <div className="form-group">
+                    <label>Report ID:</label>
+                    <input type="text" value={modalData.id} disabled />
                   </div>
+                  <div className="form-group">
+                    <label>Current Status:</label>
+                    <input type="text" value={capitalizeFirstLetter(modalData.status || 'pending')} disabled />
+                  </div>
+                  <div className="form-group">
+                    <label>New Status:</label>
+                    <select
+                      value={modalData.status || 'pending'} // Set the current status as the default selected value
+                      onChange={(e) => setModalData({ ...modalData, status: e.target.value })}
+                    >
+                      <option value="pending">Pending</option>
+                      <option value="resolved">Resolved</option>
+                      <option value="dismissed">Dismissed</option>
+                      {/* Add more options here if needed, e.g.: */}
+                      {/* <option value="in_progress">In Progress</option> */}
+                      {/* <option value="escalated">Escalated</option> */}
+                    </select>
+                  </div>
+                  <button type="submit">Update Status</button>
+                </form>
+              )}
+
+              {modalType === 'editQuiz' && modalData && (
+                <form onSubmit={(e) => {
+                  e.preventDefault();
+                  updateQuizQuestion();
+                }}>
+                  <div className="form-group">
+                    <label>Question ID:</label>
+                    <input type="text" value={modalData.id} disabled />
+                  </div>
+                  <div className="form-group">
+                    <label>Question Text:</label>
+                    <textarea
+                      value={modalData.question || ''}
+                      onChange={(e) => setModalData({ ...modalData, question: e.target.value })}
+                      rows="3"
+                    ></textarea>
+                  </div>
+                  <div className="form-group">
+                    <label>Options (comma-separated):</label>
+                    <input
+                      type="text"
+                      value={Array.isArray(modalData.options) ? modalData.options.join(', ') : ''}
+                      onChange={(e) => setModalData({ ...modalData, options: e.target.value.split(',').map(opt => opt.trim()) })}
+                    />
+                  </div>
+                  <div className="form-group">
+                    <label>Correct Answer:</label>
+                    <input
+                      type="text"
+                      value={modalData.correct_answer || ''}
+                      onChange={(e) => setModalData({ ...modalData, correct_answer: e.target.value })}
+                    />
+                  </div>
+                  <button type="submit">Save Changes</button>
+                </form>
+              )}
+
+              {modalType === 'viewQuiz' && modalData && (
+                <div>
+                  <h3>Quiz Question Details</h3>
+                  <p><strong>ID:</strong> {modalData.id}</p>
+                  <p><strong>Question:</strong> {modalData.question}</p>
+                  <p><strong>Options:</strong></p>
+                  <ul>
+                    {modalData.options && Array.isArray(modalData.options) ? (
+                      modalData.options.map((option, index) => (
+                        <li key={index}>{option}</li>
+                      ))
+                    ) : (
+                      <li>N/A</li>
+                    )}
+                  </ul>
+                  <p><strong>Correct Answer:</strong> {modalData.correct_answer || 'N/A'}</p>
+                  <p><strong>Created On:</strong> {formatDate(modalData.created_at)}</p>
+                </div>
+              )}
+
+              {modalType === 'viewTestimonial' && modalData && (
+                <div>
+                  <h3>Testimonial Details</h3>
+                  <p><strong>ID:</strong> {modalData.id}</p>
+                  <p><strong>Author:</strong> {modalData.author || 'Anonymous'}</p>
+                  <p><strong>Content:</strong> {modalData.content || 'N/A'}</p>
+                  <p><strong>Rating:</strong> {modalData.rating || 'N/A'}</p>
+                  <p><strong>Created On:</strong> {formatDate(modalData.created_at)}</p>
+                </div>
+              )}
+
+              {/* MODAL CONTENT: For viewing Resource details */}
+              {modalType === 'viewResource' && modalData && (
+                <div>
+                  <h3>Resource Details</h3>
+                  <p><strong>ID:</strong> {modalData.id}</p>
+                  <p><strong>Title:</strong> {modalData.title || 'N/A'}</p>
+                  <p><strong>Type:</strong> {modalData.type || 'N/A'}</p>
+                  <p><strong>Content:</strong> {modalData.content || 'No content provided.'}</p>
+                  {modalData.url && (
+                    <p>
+                      <strong>URL:</strong> <a href={modalData.url} target="_blank" rel="noopener noreferrer">{modalData.url}</a>
+                    </p>
+                  )}
+                  <p><strong>Created On:</strong> {formatDate(modalData.created_at)}</p>
                 </div>
               )}
             </div>
           </div>
-        </div>
-      )}
-      
-      {/* Loader */}
-      {isLoading && (
-        <div id="loader" style={{ display: 'flex' }}>
-          <div className="spinner"></div>
-        </div>
-      )}
-      
-      {/* Notification */}
-      {notification.show && (
-        <div id="notification" className={`notification ${notification.type}`} style={{ display: 'block' }}>
-          {notification.message}
         </div>
       )}
     </div>
