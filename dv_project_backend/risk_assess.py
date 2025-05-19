@@ -9,11 +9,12 @@ CORS(app)
 # Load model from backend directory
 # model_path = os.path.join(os.path.dirname(__file__), 'risk_model.pkl')
 model = joblib.load(open("risk_model.pkl", "rb"))
+model_accuracy = joblib.load('model_accuracy.pkl')
 
 EMPLOYMENT_MAP = {
     "unemployed": 0,
-    "employed": 1,
-    "self-employed": 2
+    "semi employed": 1,
+    "employed": 2
 }
 
 EDUCATION_MAP = {
@@ -55,7 +56,7 @@ def predict():
               ]
               
               prediction = model.predict([features])
-              return jsonify({'risk level': prediction[0]})
+              return jsonify({'risk_level': prediction[0], 'accuracy_score': round(model_accuracy * 100, 2)})
        except KeyError as e:
               return jsonify({'error': f"Missing or invalid value for: {e}"}), 400
        # prediction = model.predict([data])  # Make prediction

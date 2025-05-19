@@ -50,12 +50,12 @@ const RiskAssessment = () => {
 
       const data = await response.json()
       console.log(data)
-      setResult(data.risk_level)
+      setResult({ risk:data.risk_level, accuracy:data.accuracy_score})
       setView("result")
     } catch (error) {
       console.error("Error submitting assessment:", error)
       // Show a mock result for demonstration if the API is not available
-      setResult("Medium Risk - This is a sample result as the API connection failed")
+      setResult({ risk: "Ooops! - Sorry, we are unable to provide your results due to a failure on our end. We are working on it!", accuracy: "0" })
       setView("result")
     } finally {
       setIsSubmitting(false)
@@ -119,9 +119,9 @@ const RiskAssessment = () => {
   const renderResultCard = () => {
     // Determine risk level class for styling
     let riskClass = "risk-medium"
-    if (result.toLowerCase().includes("high")) {
+    if (result?.risk?.toLowerCase().includes("high")) {
       riskClass = "risk-high"
-    } else if (result.toLowerCase().includes("low")) {
+    } else if (result?.risk?.toLowerCase().includes("low")) {
       riskClass = "risk-low"
     }
 
@@ -129,8 +129,11 @@ const RiskAssessment = () => {
       <div className="result-card">
         <h3>Assessment Result</h3>
         <div className={`risk-level ${riskClass}`}>
-          <span>{result}</span>
+          <span>{result?.risk}</span>
         </div>
+        <div className="accuracy-info">
+  <p><strong>Model Accuracy:</strong> {result?.accuracy}%</p>
+</div>
         <div className="result-info">
           <p>
             This assessment is based on the information you provided. It's important to remember that this is just a
@@ -259,7 +262,7 @@ const RiskAssessment = () => {
                 <div className="question-content">
                   <label htmlFor="income">What is your monthly income?</label>
                   <input
-                    type="text"
+                    type="number"
                     id="income"
                     name="income"
                     value={formData.income}
