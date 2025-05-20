@@ -150,7 +150,7 @@ const styles = {
   },
   chatBox: {
     width: "100%",
-    maxWidth: 600,
+    maxWidth: 1000,
     height: "80vh",
     overflowY: "auto",
     display: "flex",
