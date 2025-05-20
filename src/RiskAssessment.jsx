@@ -1,15 +1,15 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
-import "./RiskAssessment.css"
-import { FaChevronLeft, FaChevronRight, FaSun, FaMoon } from "react-icons/fa"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import "./RiskAssessment.css";
+import { FaChevronLeft, FaChevronRight, FaSun, FaMoon } from "react-icons/fa";
 // import { predictRisk } from '../api/api';
 
 const RiskAssessment = () => {
-  const navigate = useNavigate()
-  const [darkMode, setDarkMode] = useState(false)
-  const [view, setView] = useState("main")
+  const navigate = useNavigate();
+  const [darkMode, setDarkMode] = useState(false);
+  const [view, setView] = useState("main");
   const [formData, setFormData] = useState({
     age: "",
     income: "",
@@ -18,26 +18,34 @@ const RiskAssessment = () => {
     marital_status: "",
     violence: "",
     comments: "",
-  })
-  const [result, setResult] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  });
+  const [result, setResult] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Define the steps for progress tracking
-  const steps = ["main", "education", "income", "employment", "marital", "abuse", "comments"]
-  const currentStep = steps.indexOf(view) + 1
-  const totalSteps = steps.length
+  const steps = [
+    "main",
+    "education",
+    "income",
+    "employment",
+    "marital",
+    "abuse",
+    "comments",
+  ];
+  const currentStep = steps.indexOf(view) + 1;
+  const totalSteps = steps.length;
 
   const handleChange = (e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData((prevState) => ({
       ...prevState,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
   const handleSubmit = async (e) => {
-    e.preventDefault()
-    setIsSubmitting(true)
+    e.preventDefault();
+    setIsSubmitting(true);
 
     try {
       const response = await fetch("http://localhost:5001/predict", {
@@ -46,83 +54,93 @@ const RiskAssessment = () => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(formData),
-      })
+      });
 
-      const data = await response.json()
-      console.log(data)
-      setResult({ risk:data.risk_level, accuracy:data.accuracy_score})
-      setView("result")
+      const data = await response.json();
+      console.log(data);
+      setResult({ risk: data.risk_level, accuracy: data.accuracy_score });
+      setView("result");
     } catch (error) {
-      console.error("Error submitting assessment:", error)
+      console.error("Error submitting assessment:", error);
       // Show a mock result for demonstration if the API is not available
-      setResult({ risk: "Ooops! - Sorry, we are unable to provide your results due to a failure on our end. We are working on it!", accuracy: "0" })
-      setView("result")
+      setResult({
+        risk: "Ooops! - Sorry, we are unable to provide your results due to a failure on our end. We are working on it!",
+        accuracy: "0",
+      });
+      setView("result");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleQuickExit = () => {
-    sessionStorage.clear()
-    localStorage.clear()
-    window.location.href = "https://weather.com"
-  }
+    sessionStorage.clear();
+    localStorage.clear();
+    window.location.href = "https://weather.com";
+  };
 
   const navigateToStep = (step) => {
-    setView(step)
-  }
+    setView(step);
+  };
 
   const getStepTitle = () => {
     switch (view) {
       case "main":
-        return "Personal Information"
+        return "Personal Information";
       case "education":
-        return "Education Background"
+        return "Education Background";
       case "income":
-        return "Financial Information"
+        return "Financial Information";
       case "employment":
-        return "Employment Status"
+        return "Employment Status";
       case "marital":
-        return "Relationship Status"
+        return "Relationship Status";
       case "abuse":
-        return "Previous Experiences"
+        return "Previous Experiences";
       case "comments":
-        return "Additional Information"
+        return "Additional Information";
       case "result":
-        return "Assessment Results"
+        return "Assessment Results";
       default:
-        return "Risk Assessment"
+        return "Risk Assessment";
     }
-  }
+  };
 
   const renderProgressBar = () => {
     return (
       <div className="progress-container">
         <div className="progress-bar">
-          <div className="progress-fill" style={{ width: `${(currentStep / totalSteps) * 100}%` }}></div>
+          <div
+            className="progress-fill"
+            style={{ width: `${(currentStep / totalSteps) * 100}%` }}
+          ></div>
         </div>
         <div className="progress-steps">
           {steps.map((step, index) => (
             <div
               key={step}
-              className={`progress-step ${view === step ? "active" : ""} ${steps.indexOf(view) >= index ? "completed" : ""}`}
-              onClick={() => steps.indexOf(view) >= index && navigateToStep(step)}
+              className={`progress-step ${view === step ? "active" : ""} ${
+                steps.indexOf(view) >= index ? "completed" : ""
+              }`}
+              onClick={() =>
+                steps.indexOf(view) >= index && navigateToStep(step)
+              }
             >
               {index + 1}
             </div>
           ))}
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   const renderResultCard = () => {
     // Determine risk level class for styling
-    let riskClass = "risk-medium"
+    let riskClass = "risk-medium";
     if (result?.risk?.toLowerCase().includes("high")) {
-      riskClass = "risk-high"
+      riskClass = "risk-high";
     } else if (result?.risk?.toLowerCase().includes("low")) {
-      riskClass = "risk-low"
+      riskClass = "risk-low";
     }
 
     return (
@@ -132,29 +150,35 @@ const RiskAssessment = () => {
           <span>{result?.risk}</span>
         </div>
         <div className="accuracy-info">
-  <p><strong>Model Accuracy:</strong> {result?.accuracy}%</p>
-</div>
+          <p>
+            <strong>Model Accuracy:</strong> {result?.accuracy}%
+          </p>
+        </div>
         <div className="result-info">
           <p>
-            This assessment is based on the information you provided. It's important to remember that this is just a
-            tool and not a definitive evaluation.
+            This assessment is based on the information you provided. It's
+            important to remember that this is just a tool and not a definitive
+            evaluation.
           </p>
           <p>
-            If you feel unsafe or in danger, please contact emergency services or a domestic violence hotline
-            immediately.
+            If you feel unsafe or in danger, please contact emergency services
+            or a domestic violence hotline immediately.
           </p>
         </div>
         <div className="result-actions">
           <button className="secondary-button" onClick={() => setView("main")}>
             Retake Assessment
           </button>
-          <button className="primary-button" onClick={() => navigate("/dashboard")}>
+          <button
+            className="primary-button"
+            onClick={() => navigate("/dashboard")}
+          >
             Return To Dashboard
           </button>
         </div>
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <div className={`risk-assessment-page ${darkMode ? "dark-mode" : ""}`}>
@@ -168,16 +192,25 @@ const RiskAssessment = () => {
             <button onClick={() => navigate("/resources")} className="nav-link">
               Resources
             </button>
-            <button onClick={() => navigate("/risk-assessment")} className="nav-link active">
+            <button
+              onClick={() => navigate("/risk-assessment")}
+              className="nav-link active"
+            >
               Risk Assessment
             </button>
             <button onClick={() => navigate("/support")} className="nav-link">
               Support
             </button>
-            <button onClick={() => navigate("/report-incident")} className="nav-link">
+            <button
+              onClick={() => navigate("/report-incident")}
+              className="nav-link"
+            >
               Report Incident
             </button>
-            <button onClick={() => navigate("/testimonials")} className="nav-link">
+            <button
+              onClick={() => navigate("/testimonials")}
+              className="nav-link"
+            >
               Testimonials
             </button>
             <button onClick={() => navigate("/dashboard")} className="nav-link">
@@ -188,8 +221,15 @@ const RiskAssessment = () => {
             <button onClick={handleQuickExit} className="quick-exit-btn">
               Quick Exit
             </button>
-            <button onClick={() => setDarkMode(!darkMode)} className="theme-toggle-btn">
-              {darkMode ? <FaSun className="sun-icon" /> : <FaMoon className="moon-icon" />}
+            <button
+              onClick={() => setDarkMode(!darkMode)}
+              className="theme-toggle-btn"
+            >
+              {darkMode ? (
+                <FaSun className="sun-icon" />
+              ) : (
+                <FaMoon className="moon-icon" />
+              )}
             </button>
           </div>
         </div>
@@ -214,6 +254,7 @@ const RiskAssessment = () => {
                     placeholder="Enter your age"
                     onChange={handleChange}
                     required
+                    min="0"
                   />
                 </div>
                 <div className="card-navigation">
@@ -221,7 +262,13 @@ const RiskAssessment = () => {
                   <button
                     type="button"
                     className="nav-button next"
-                    onClick={() => navigateToStep("education")}
+                    onClick={() => {
+                      if (formData.age < 0) {
+                        alert("Age cannot be negative.");
+                        return;
+                      }
+                      navigateToStep("education");
+                    }}
                     disabled={!formData.age}
                   >
                     Next <FaChevronRight />
@@ -233,8 +280,16 @@ const RiskAssessment = () => {
             {view === "education" && (
               <div className="question-card">
                 <div className="question-content">
-                  <label htmlFor="education">What is your highest level of education?</label>
-                  <select id="education" name="education" value={formData.education} onChange={handleChange} required>
+                  <label htmlFor="education">
+                    What is your highest level of education?
+                  </label>
+                  <select
+                    id="education"
+                    name="education"
+                    value={formData.education}
+                    onChange={handleChange}
+                    required
+                  >
                     <option value="">Select education level</option>
                     <option value="primary">Primary School</option>
                     <option value="secondary">Secondary School</option>
@@ -242,7 +297,11 @@ const RiskAssessment = () => {
                   </select>
                 </div>
                 <div className="card-navigation">
-                  <button type="button" className="nav-button prev" onClick={() => navigateToStep("main")}>
+                  <button
+                    type="button"
+                    className="nav-button prev"
+                    onClick={() => navigateToStep("main")}
+                  >
                     <FaChevronLeft /> Previous
                   </button>
                   <button
@@ -269,17 +328,30 @@ const RiskAssessment = () => {
                     placeholder="Enter amount"
                     onChange={handleChange}
                     required
+                    min={0}
                   />
-                  <small className="input-help">You can enter an approximate amount</small>
+                  <small className="input-help">
+                    You can enter an approximate amount
+                  </small>
                 </div>
                 <div className="card-navigation">
-                  <button type="button" className="nav-button prev" onClick={() => navigateToStep("education")}>
+                  <button
+                    type="button"
+                    className="nav-button prev"
+                    onClick={() => navigateToStep("education")}
+                  >
                     <FaChevronLeft /> Previous
                   </button>
                   <button
                     type="button"
                     className="nav-button next"
-                    onClick={() => navigateToStep("employment")}
+                    onClick={() => {
+                      if (formData.income < 0) {
+                        alert("Income cannot be negative.");
+                        return;
+                      }
+                      navigateToStep("employment");
+                    }}
                     disabled={!formData.income}
                   >
                     Next <FaChevronRight />
@@ -291,7 +363,9 @@ const RiskAssessment = () => {
             {view === "employment" && (
               <div className="question-card">
                 <div className="question-content">
-                  <label htmlFor="employment">What is your current employment status?</label>
+                  <label htmlFor="employment">
+                    What is your current employment status?
+                  </label>
                   <select
                     id="employment"
                     name="employment"
@@ -306,7 +380,11 @@ const RiskAssessment = () => {
                   </select>
                 </div>
                 <div className="card-navigation">
-                  <button type="button" className="nav-button prev" onClick={() => navigateToStep("income")}>
+                  <button
+                    type="button"
+                    className="nav-button prev"
+                    onClick={() => navigateToStep("income")}
+                  >
                     <FaChevronLeft /> Previous
                   </button>
                   <button
@@ -324,7 +402,9 @@ const RiskAssessment = () => {
             {view === "marital" && (
               <div className="question-card">
                 <div className="question-content">
-                  <label htmlFor="marital_status">What is your current relationship status?</label>
+                  <label htmlFor="marital_status">
+                    What is your current relationship status?
+                  </label>
                   <select
                     id="marital_status"
                     name="marital_status"
@@ -339,7 +419,11 @@ const RiskAssessment = () => {
                   </select>
                 </div>
                 <div className="card-navigation">
-                  <button type="button" className="nav-button prev" onClick={() => navigateToStep("employment")}>
+                  <button
+                    type="button"
+                    className="nav-button prev"
+                    onClick={() => navigateToStep("employment")}
+                  >
                     <FaChevronLeft /> Previous
                   </button>
                   <button
@@ -357,7 +441,9 @@ const RiskAssessment = () => {
             {view === "abuse" && (
               <div className="question-card">
                 <div className="question-content">
-                  <label htmlFor="violence">Have you experienced any form of abuse in the past?</label>
+                  <label htmlFor="violence">
+                    Have you experienced any form of abuse in the past?
+                  </label>
                   <div className="radio-group">
                     <div className="radio-option">
                       <input
@@ -384,11 +470,16 @@ const RiskAssessment = () => {
                     </div>
                   </div>
                   <small className="input-help">
-                    Your answers are confidential and will only be used for this assessment
+                    Your answers are confidential and will only be used for this
+                    assessment
                   </small>
                 </div>
                 <div className="card-navigation">
-                  <button type="button" className="nav-button prev" onClick={() => navigateToStep("marital")}>
+                  <button
+                    type="button"
+                    className="nav-button prev"
+                    onClick={() => navigateToStep("marital")}
+                  >
                     <FaChevronLeft /> Previous
                   </button>
                   <button
@@ -406,7 +497,9 @@ const RiskAssessment = () => {
             {view === "comments" && (
               <div className="question-card">
                 <div className="question-content">
-                  <label htmlFor="comments">Is there anything else you'd like to share? (Optional)</label>
+                  <label htmlFor="comments">
+                    Is there anything else you'd like to share? (Optional)
+                  </label>
                   <textarea
                     id="comments"
                     name="comments"
@@ -417,10 +510,18 @@ const RiskAssessment = () => {
                   ></textarea>
                 </div>
                 <div className="card-navigation">
-                  <button type="button" className="nav-button prev" onClick={() => navigateToStep("abuse")}>
+                  <button
+                    type="button"
+                    className="nav-button prev"
+                    onClick={() => navigateToStep("abuse")}
+                  >
                     <FaChevronLeft /> Previous
                   </button>
-                  <button type="submit" className="submit-button" disabled={isSubmitting}>
+                  <button
+                    type="submit"
+                    className="submit-button"
+                    disabled={isSubmitting}
+                  >
                     {isSubmitting ? "Processing..." : "Submit Assessment"}
                   </button>
                 </div>
@@ -432,11 +533,14 @@ const RiskAssessment = () => {
         )}
 
         <div className="assessment-footer">
-          <p>Your privacy and safety are our top priorities. All information is encrypted and confidential.</p>
+          <p>
+            Your privacy and safety are our top priorities. All information is
+            encrypted and confidential.
+          </p>
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default RiskAssessment
+export default RiskAssessment;
